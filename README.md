@@ -2,9 +2,9 @@
  真寻bot一键部署脚本
 ## 食用方法
 视频教程和软件下载地址https://quqi.avyeld.com/s/7472431/hwa9q8OUfjCIN721
-**一键脚本:
+
 ```bash
-bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+一键脚本bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
 ```
 ## 更新
 
