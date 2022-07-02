@@ -2,15 +2,19 @@
  真寻bot一键部署脚本
 ## 食用方法
 ```bash
-bash <(curl -s -L http://gitee.com/soloxiaoye/zhenxun_bot_tool/blob/master/install.sh)
+bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
 ```
 ## 更新
 
 ****
 
-**2022/6/12**
 
-* 修改安装目录为/sd/bot
+**2022/7/2**
+
+* 修改安装目录为/root 
+* 添加脚本升级链接
+* 修改dns，解决部分本地dns无法访问api.github.com问题
+* 支持proot容器安装ssh服务
 
 **2022/6/11**
 
