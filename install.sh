@@ -2,7 +2,7 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
-update_shell_url="https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh"
+update_shell_url="https://ghproxy.com/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh"
 zhenxun_url="https://github.com/HibiKier/zhenxun_bot.git"
 WORK_DIR="/root"
 TMP_DIR="$(mktemp -d)"
