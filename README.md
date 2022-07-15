@@ -13,6 +13,10 @@ bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-d
 
 ****
 
+**2022/7/16**
+
+*优化poetry下载依赖的速度
+
 **2022/7/3**
 
 * 修复pgsql数据库安装问题
