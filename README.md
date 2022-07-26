@@ -1,7 +1,7 @@
 # zhenxun_bot-deploy
  真寻bot一键部署脚本修改版
 ## 食用方法  
-注意！！！此修改版只能用于moe的proot容器，且只支持arm64的debian11和Ubuntu20.04。  
+注意！！！此修改版只能用于tmoe的proot容器，且只支持arm64的debian11和Ubuntu20.04。  
 [UTermux/ZeroTermux/TermuxWatch下载站](https://blog.utermux.dev/ut/download.html)  
 [zerotermux下载地址](https://d.icdown.club/repository/main/ZeroTermux/ZeroTermux%20-0.118.21.apk)  
 [视频教程和软件下载地址](https://quqi.avyeld.com/s/7472431/hwa9q8OUfjCIN721)  
