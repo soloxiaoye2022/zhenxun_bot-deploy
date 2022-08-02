@@ -769,7 +769,7 @@ menu_termux() {
  ${Green_font_prefix} 2.${Font_color_suffix} 重启 postgresql 数据库
  ${Green_font_prefix} 3.${Font_color_suffix} 停止 postgresql 数据库
  ————————————
- ${Green_font_prefix} 4.${Font_color_suffix} 检查模块
+ ${Green_font_prefix} 4.${Font_color_suffix} 检测 zhenxun_bot 依赖
  ${Green_font_prefix} 5.${Font_color_suffix} 设置 zhenxun gocq 端口
  ${Green_font_prefix} 6.${Font_color_suffix} 修改 dns
  ————————————
