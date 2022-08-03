@@ -196,7 +196,7 @@ check_module() {
 log="/root/zhenxun_bot/zhenxun_bot.log"
 dir="/root/zhenxun_bot"
 if [[ -e "${log}" ]]; then
-echo -e "${lnfo} 正在检测 zhenxun_bot 所需依赖"
+echo -e "${lnfo} 正在检测 zhenxun_bot 所需依赖(这是个测试功能,不能保证一定能安装上..)"
 cat ${log} | grep "No module named" | awk -F "'" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g' | sed 's/ /\n/' > /root/zhenxun_bot/requests.txt
 Install_module
 else
