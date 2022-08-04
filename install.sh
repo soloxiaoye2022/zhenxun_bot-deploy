@@ -220,7 +220,7 @@ fi
 }
 
 Install_module() {
-module=$(sort -u /root/zhenxun_bot/requests.txt | uniq)
+module=$(sort -u /root/zhenxun_bot/requests.txt | uniq| sed '/^enchant/d')
 echo ${module} > /root/zhenxun_bot/requests.txt
 if [[ ! -z "${module}" ]]; then
 cd ${dir}
