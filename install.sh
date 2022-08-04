@@ -335,7 +335,7 @@ echo -e "${Info} 请设置zhenxun_bot gocq通信端口:取值范围["${Green_fon
 Restart_zx_gocq() {
      Set_Port
      Restart_zhenxun_bot
-     Restart_gocq
+     Restart_cqhttp
 }
 Start_zhenxun_bot() {
     check_installed_zhenxun_status
@@ -626,7 +626,6 @@ Install_zhenxun_bot() {
     ((outTime=($endTime-$startTime)))
     echo -e "${Info} 安装用时 ${outTime} s ..."
     Start_zhenxun_bot
-    Install_webui
     Start_cqhttp
     echo -e "${lnfo} 请扫描二维码登录 bot，bot 账号登录完成后，使用Ctrl + C退出 !"
     View_cqhttp_log
