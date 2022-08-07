@@ -231,6 +231,7 @@ echo -e "${lnfo} 本次依赖安装结束"
 check_module
 else
 echo -e "${lnfo} 没有依赖需要安装"
+git stash
 fi
 }
 
