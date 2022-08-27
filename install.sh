@@ -638,9 +638,9 @@ INODE_NUM=`ls -ali / | sed '2!d' |awk {'print $1'}`
 if [ $INODE_NUM == '2' ];
 then
       echo -e "${Info} 开始安装pgsql数据库"
-      apt-get -y install 
-      postgresql \
-      postgresql-contrib 
+      apt-get install postgresql postgresql-contrib -y
+      echo -e "${lnfo} 设置开机自启"
+
       systemctl enable postgresql
       systemctl restart postgresql
 else
