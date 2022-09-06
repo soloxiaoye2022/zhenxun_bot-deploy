@@ -14,6 +14,10 @@ bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-d
 
 ****
 
+**2022/9/7**
+
+* 新增apt换源功能
+
 **2022/8/3**
 
 * 新增一键检测安装依赖功能
