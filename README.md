@@ -10,6 +10,10 @@ proot容器相关软件及教程:
 ```bash
 bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
 ```
+大陆机器：
+```bash
+bash <(curl -s -L https://ghproxy.com/raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+```
 ## 更新
 
 ****
