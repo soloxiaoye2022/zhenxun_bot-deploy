@@ -584,7 +584,7 @@ Install_zhenxun_bot() {
     [[ -e "${WORK_DIR}/zhenxun_bot/bot.py" ]] && echo -e "${Error} 检测到 zhenxun_bot 已安装 !" && exit 1
     startTime=`date +%s`
     Set_ghproxy
-    Set_apt_tsinghua
+    Set_apt_source
     echo -e "${Info} 开始检查系统..."
     check_arch
     check_sys
