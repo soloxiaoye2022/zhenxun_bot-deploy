@@ -6,6 +6,23 @@ proot容器相关软件及教程:
 [UTermux/ZeroTermux/TermuxWatch下载站](https://blog.utermux.dev/ut/download.html)  
 [zerotermux下载地址](https://d.icdown.club/repository/main/ZeroTermux/ZeroTermux%20-0.118.21.apk)  
 [视频教程和软件下载地址](https://quqi.avyeld.com/s/7472431/hwa9q8OUfjCIN721)  
+
+## 系统要求
+
+*debian11
+
+*Ubuntu20.04
+
+*其他版本自行安装python3.8+
+
+**在termux部署真寻建议使用tmoe脚本安装proot容器
+
+```bash
+
+bash -c "$(curl -L gitee.com/mo2/linux/raw/2/2)"
+
+```
+
 ## 一键脚本
 ```bash
 bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
