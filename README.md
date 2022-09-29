@@ -13,9 +13,9 @@ proot容器相关软件及教程:
 
 *Ubuntu20.04
 
-*其他版本自行安装python3.8+
+*其他发行版自行安装python3.8+
 
-**在termux部署真寻建议使用tmoe脚本安装proot容器
+**在termux部署真寻建议使用tmoe脚本安装proot容器，chroot容器将在下个版本支持。使用其他方式安装的容器自行测试。
 
 ```bash
 
