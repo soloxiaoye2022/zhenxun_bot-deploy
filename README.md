@@ -6,6 +6,7 @@ proot容器相关软件及教程:
 [UTermux/ZeroTermux/TermuxWatch下载站](https://blog.utermux.dev/ut/download.html)  
 [zerotermux下载地址](https://d.icdown.club/repository/main/ZeroTermux/ZeroTermux%20-0.118.21.apk)  
 [视频教程和软件下载地址](https://quqi.avyeld.com/s/7472431/hwa9q8OUfjCIN721)  
+手机部署真寻交流群:948192110[termux-arm64-真寻交流群](https://jq.qq.com/?_wv=1027&k=rMWrhoIt)
 
 ## 系统要求
 
