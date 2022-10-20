@@ -383,7 +383,7 @@ Start_cqhttp() {
 Start_postgresql() {
 INODE_NUM=`ls -ali / | sed '2!d' |awk {'print $1'}`
 if [ $INODE_NUM == '2' ]; then
-sudo systemctl start postgresql
+systemctl start postgresql
 else
 su postgres <<-EOF
      pg_createcluster 13 main --start
@@ -399,7 +399,7 @@ echo -e "${Info} pgsql数据库已重启"
 Stop_postgresql() {
 INODE_NUM=`ls -ali / | sed '2!d' |awk {'print $1'}`
 if [ $INODE_NUM == '2' ]; then
-sudo systemctl stop postgresql
+systemctl stop postgresql
 else
 su postgres <<-EOF
      /etc/init.d/postgresql stop
@@ -479,23 +479,23 @@ echo -e "${Info} 请输入要选择的apt源,默认为北外源
 }
 
 apt_source_bfsu() {
-   sudo sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.bfsu.edu.cn/@g" /etc/apt/sources.list && apt update
+ sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.bfsu.edu.cn/@g" /etc/apt/sources.list && apt update
 }
 
 apt_source_tsinghua() {
- sudo sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.tuna.tsinghua.edu.cn/@g" /etc/apt/sources.list && apt update
+ sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.tuna.tsinghua.edu.cn/@g" /etc/apt/sources.list && apt update
 }
 
 apt_source_ali() {
- sudo sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@http://mirrors.aliyun.com/@g" /etc/apt/sources.list && apt update
+ sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@http://mirrors.aliyun.com/@g" /etc/apt/sources.list && apt update
 }
 
 apt_source_ustc() {
- sudo sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.ustc.edu.cn/@g" /etc/apt/sources.list && apt update
+ sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.ustc.edu.cn/@g" /etc/apt/sources.list && apt update
 }
 
 apt_source_163() {
- sudo sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@http://mirrors.163.com/@g" /etc/apt/sources.list && apt update
+ sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@http://mirrors.163.com/@g" /etc/apt/sources.list && apt update
 }
 
 Manual_input_source() {
@@ -508,9 +508,9 @@ read -erp "请输入镜像站地址(示例https://mirrors.bfsu.edu.cn/):" input
      character="/"
     if [ "$sybmol" = "character"  ];
      then
-      sudo sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@'$input'@g" /etc/apt/sources.list && apt update
+      sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@'$input'@g" /etc/apt/sources.list && apt update
      else
-      sudo sed -i "s@https://.*.c..\|http://.*.c..\|https://.*.c.\|http://.*.c.\|https://.*.org\|http://.*.org\|https://.*.net|http://.*.net@'$input'@g" /etc/apt/sources.list && apt update
+      sed -i "s@https://.*.c..\|http://.*.c..\|https://.*.c.\|http://.*.c.\|https://.*.org\|http://.*.org\|https://.*.net|http://.*.net@'$input'@g" /etc/apt/sources.list && apt update
    fi
    echo -e "${Info} apt源已修改为 ${input}"
 fi
@@ -599,8 +599,8 @@ Install_zhenxun_bot() {
     Set_dependency
     if [[ ${release} == "centos" ]]; then
         echo -e "${Info} CentOS 中文字体设置..."
-        sudo mkdir -p /usr/share/fonts/chinese
-        sudo cp -r ${WORK_DIR}/zhenxun_bot/resources/font /usr/share/fonts/chinese
+        mkdir -p /usr/share/fonts/chinese
+        cp -r ${WORK_DIR}/zhenxun_bot/resources/font /usr/share/fonts/chinese
         cd /usr/share/fonts/chinese && mkfontscale
     fi
     endTime=`date +%s`
@@ -618,16 +618,16 @@ INODE_NUM=`ls -ali / | sed '2!d' |awk {'print $1'}`
 if [ $INODE_NUM == '2' ];
 then
       echo -e "${Info} 开始安装pgsql数据库"
-      sudo apt-get install postgresql postgresql-contrib -y
+      apt-get install postgresql postgresql-contrib -y
       echo -e "${Info} 设置pgsql数据库开机自启"
       systemctl enable postgresql
       systemctl restart postgresql
 else
       echo -e "${Info} 开始安装pgsql数据库"
-      sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+      sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
         wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-        sudo apt-get update
-        sudo apt-get -y install postgresql-13
+        apt-get update
+        apt-get -y install postgresql-13
     if stat "/etc/ssl/private/ssl-cert-snakeoil.key" | grep 0700; then
 echo -e "${Info} 检测数据库状态 "
 else
@@ -675,9 +675,9 @@ Update_Shell(){
         echo -e "${Info} 创建备份文件夹${bak_dir_name}"
     fi
     wget ${update_shell_url} -O install.sh.new
-    sudo cp -f install.sh ${bak_file_name}
+    cp -f install.sh ${bak_file_name}
     echo -e "${Info} 备份原install.sh为${bak_file_name}"
-    sudo mv -f install.sh.new install.sh
+    mv -f install.sh.new install.sh
     echo -e "${Info} install.sh更新完成，请重新启动"
     exit 0
 }
