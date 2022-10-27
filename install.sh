@@ -359,7 +359,7 @@ echo -e "${Info} 请设置zhenxun_bot gocq通信端口:取值范围["${Green_fon
 Restart_zx_gocq() {
      Set_Port
      Restart_zhenxun_bot
-     Restart_gocq
+     Restart_cqhttp
 }
 Start_zhenxun_bot() {
     check_installed_zhenxun_status
