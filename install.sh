@@ -568,7 +568,7 @@ Set_dependency() {
     poetry install
     poetry run playwright install-deps chromium
     poetry run playwright install chromium
-    poetry run ${python_v} -m pip install nonebot-adapter-onebot
+
 }
 
 Install_sshd() {
