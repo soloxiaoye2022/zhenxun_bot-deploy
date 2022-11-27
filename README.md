@@ -1,7 +1,7 @@
 # zhenxun_bot-deploy
  真寻bot一键部署脚本修改版
 ## 食用方法  
-此修改版可以在服务器、虚拟机以及tmoe的proot容器(proot容器只支持arm64架构的debian11和Ubuntu20.04，暂未支持chroot容器。理论上docker容器也可以使用）部署真寻。  
+此修改版可以在服务器、虚拟机以及tmoe的proot容器(proot容器只支持arm64架构的debian11和Ubuntu20.04，暂未支持chroot容器和docker容器）部署真寻。  
 proot容器相关软件及教程:
 [UTermux/ZeroTermux/TermuxWatch下载站](https://blog.utermux.dev/ut/download.html)  
 [zerotermux下载地址](https://d.icdown.club/repository/main/ZeroTermux/ZeroTermux%20-0.118.21.apk)  
