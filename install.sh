@@ -563,7 +563,7 @@ Exit_cqhttp() {
 Set_dependency() {
     cd ${WORK_DIR}/zhenxun_bot
     Set_pip_Mirror
-    ${python_v} -m pip install poetry -i ${mirror_url}
+    ${python_v} -m pip install poetry -i ${pip_url}
     poetry env use ${python_v}
     poetry install
     poetry run playwright install-deps chromium
