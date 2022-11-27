@@ -12,7 +12,7 @@ python_v="python3.8"
 which python3.9 && python_v="python3.9"
 sh_ver="1.0.4.1"
 ghproxy="https://ghproxy.com/"
-mirror_url="https://pypi.org/simple"
+mirror_url='"https://pypi.org/simple"'
 ssh_port="8022"
 mix="1024"
 max="49151"
@@ -241,7 +241,7 @@ if [[ ! -z "${module}" ]]; then
 cd ${dir}
 echo -e "${Info} 本次检测到以下版本依赖需要安装,如果安装失败请手动进入虚拟环境执行poetry install"
 sleep 1
-poetry run pip install $module -i ${mirror_url}
+poetry run pip install $module -i ${pip_url}
 echo -e "${Info} 本次依赖安装结束"
 check_module
 else
