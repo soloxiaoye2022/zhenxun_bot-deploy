@@ -813,7 +813,7 @@ menu_termux() {
  ${Green_font_prefix} 5.${Font_color_suffix} 设置 zhenxun gocq 端口
  ${Green_font_prefix} 6.${Font_color_suffix} 修改 dns
  ————————————
- ${Green_font_prefix} 7.${Font_color_suffix} 安装 sshd 服务
+ ${Green_font_prefix} 7.${Font_color_suffix} 修改 pip 源
  ${Green_font_prefix} 8.${Font_color_suffix} 修改 apt 源
 ————————————
  ${Green_font_prefix} 9.${Font_color_suffix} 切换为 go-cqhttp 菜单
@@ -856,13 +856,13 @@ menu_termux() {
     Set_check
     ;;
   5)
-    Restart_zx_gocq
+    Set_Port
     ;;
   6)
     Set_dns
     ;;
   7)
-    Install_sshd
+    Set_pip_Mirror
     ;;  
   8)
     Set_apt_source
