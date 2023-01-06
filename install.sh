@@ -372,7 +372,7 @@ Start_zhenxun_bot() {
     [[ -n ${PID} ]] && echo -e "${Error} zhenxun_bot 正在运行，请检查 !" && exit 1
     Start_postgresql
     cd ${WORK_DIR}/zhenxun_bot
-    nohup poetry run ${python_v} bot.py >> zhenxun_bot.log 2>&1 & echo $! > /var/run/zhenxun_bot.pid
+    nohup poetry run ${python_v} bot.py >> zhenxun_bot.log 2>&1 &
     echo -e "${Info} zhenxun_bot 开始运行..."
 }
 
@@ -402,7 +402,7 @@ Start_cqhttp() {
     check_pid_cqhttp
     [[ -n ${PID} ]] && echo -e "${Error} go-cqhttp 正在运行，请检查 !" && exit 1
     cd ${WORK_DIR}/go-cqhttp
-    nohup ./go-cqhttp -faststart >> go-cqhttp.log 2>&1 & echo $! > /var/run/gocq.pid
+    nohup ./go-cqhttp -faststart >> go-cqhttp.log 2>&1 &
     echo -e "${Info} go-cqhttp 开始运行..."
     sleep 2
 }
