@@ -305,8 +305,8 @@ Download_zhenxun_bot() {
 
 Download_gocq() {
  while true; do
-  gocq_version=$(wget -O- -t1 -T2 "https://api.github.com/repos/Mrs4s/go-cqhttp/releases/latest" | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
-     wget -O- "${ghproxy}https://github.com/Mrs4s/go-cqhttp/releases/download/${gocq_version}/go-cqhttp_$(uname -s)_${arch}.tar.gz" -O go-cqhttp.tar.gz
+  gocq_version=$(wget -O- -t1 -T2 "https://api.github.com/repos/Mrs4s/go-cqhttp/releases/latest" --no-check-certificate | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
+     wget -O- "${ghproxy}https://github.com/Mrs4s/go-cqhttp/releases/download/${gocq_version}/go-cqhttp_$(uname -s)_${arch}.tar.gz" --no-check-certificate -O go-cqhttp.tar.gz
    if [ $? = 0 ] ; then
       break
    else
