@@ -71,23 +71,25 @@ check_pid_cqhttp() {
 }
 
 Set_pip_Mirror() {
-  echo -e "${Info} 请输入要选择的pip下载源，默认使用清华源
-  ${Green_font_prefix} 1.${Font_color_suffix} 清华 (默认)
+  echo -e "${Info} 请输入要选择的pip下载源，默认使用北外源
+  ${Green_font_prefix} 1.${Font_color_suffix} 清华 
   ${Green_font_prefix} 2.${Font_color_suffix} 腾讯
   ${Green_font_prefix} 3.${Font_color_suffix} 阿里
   ${Green_font_prefix} 4.${Font_color_suffix} 中科大
-  ${Green_font_prefix} 5.${Font_color_suffix} 不修改"
-  read -erp "请输入数字 [1-5], 默认为 1:" mirror_num
-  [[ -z "${mirror_num}" ]] && mirror_url='"https://pypi.tuna.tsinghua.edu.cn/simple/"'
+  ${Green_font_prefix} 5.${Font_color_suffix} 北外 (默认)
+  ${Green_font_prefix} 6.${Font_color_suffix} 不修改"
+  read -erp "请输入数字 [1-6], 默认为 5:" mirror_num
+  [[ -z "${mirror_num}" ]] && mirror_url='"https://mirrors.bfsu.edu.cn/pypi/web/simple/"'
   [[ ${mirror_num} == 1 ]] && mirror_url='"https://pypi.tuna.tsinghua.edu.cn/simple/"'
   [[ ${mirror_num} == 2 ]] && mirror_url='"https://mirrors.cloud.tencent.com/pypi/simple/"'
   [[ ${mirror_num} == 3 ]] && mirror_url='"http://mirrors.aliyun.com/pypi/simple/"'
   [[ ${mirror_num} == 4 ]] && mirror_url='"https://pypi.mirrors.ustc.edu.cn/simple/"'
-  if [ $mirror_num -ge 1 -a $mirror_num -le 4 ];then
+  [[ ${mirror_num} == 5 ]] && mirror_url='"https://mirrors.bfsu.edu.cn/pypi/web/simple/"'
+  if [ $mirror_num -ge 1 -a $mirror_num -le 5 ];then
      sed -i "s|url.*|url = "${mirror_url}"|g" ${WORK_DIR}/zhenxun_bot/pyproject.toml
      pip_url=$(echo $mirror_url | sed 's/\"//g')
      pip config set global.index-url "${pip_url}"
-  elif [ $mirror_num -gt 5 ]; then
+  elif [ $mirror_num -gt 6 ]; then
      echo -e"${Info} 你可能没有输入正确的选项?"
      Set_pip_Mirror
   fi
