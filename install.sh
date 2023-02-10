@@ -336,6 +336,15 @@ Set_config_bot() {
       cd ${WORK_DIR}/go-cqhttp && sed -i "s/uin:.*/uin: $bot_qq/g" config.yml || echo -e "${Error} 配置文件不存在！请检查go-cqhttp是否安装正确!"
       echo -e "${Info} 设置成功!Bot QQ: ["${Green_font_prefix}${bot_qq}${Font_color_suffix}"]"
     fi
+    echo -e "${Info} 请选择Bot 登陆方式(默认为扫码登陆)"
+    read -erp "请选择 [1-2], 默认为 1:" login_mode
+    if [[ ${login_mode} == '2' ]]; then
+        echo -e "${Info} 请下载滑动验证助手https://github.com/KasukuSakura/mirai-login-solver-sakura/releases"
+        echo -e "${Info} 请输入Bot QQ密码:[Password]"
+        read -erp "Bot Password:" bot_password
+        cd ${WORK_DIR}/go-cqhttp && sed -i "s/password:.*/uin: $bot_password/g" config.yml || echo -e "${Error} 配置文件不存在！请检查go-cqhttp是否安装正确!"
+        echo -e "${Info} 设置成功!Bot Password: ["${Green_font_prefix}${bot_password}${Font_color_suffix}"]"
+    fi
 }
 
 Set_config() {
@@ -565,7 +574,7 @@ Exit_cqhttp() {
 Set_dependency() {
     cd ${WORK_DIR}/zhenxun_bot
     Set_pip_Mirror
-    ${python_v} -m pip install poetry --ignore-installed
+    ${python_v} -m pip install poetry
     poetry env use ${python_v}
     poetry install
     poetry run playwright install-deps chromium
@@ -734,7 +743,7 @@ menu_cqhttp() {
  ${Green_font_prefix} 3.${Font_color_suffix} 停止 go-cqhttp
  ${Green_font_prefix} 4.${Font_color_suffix} 重启 go-cqhttp
 ————————————
- ${Green_font_prefix} 5.${Font_color_suffix} 设置 bot QQ账号
+ ${Green_font_prefix} 5.${Font_color_suffix} 设置 bot QQ账号/密码
  ${Green_font_prefix} 6.${Font_color_suffix} 修改 go-cqhttp 配置文件
  ${Green_font_prefix} 7.${Font_color_suffix} 查看 go-cqhttp 日志
 ————————————
