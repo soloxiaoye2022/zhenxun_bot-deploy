@@ -79,7 +79,7 @@ Set_pip_Mirror() {
   ${Green_font_prefix} 5.${Font_color_suffix} 北外 (默认)
   ${Green_font_prefix} 6.${Font_color_suffix} 不修改"
   read -erp "请输入数字 [1-6], 默认为 5:" mirror_num
-  [[ -z "${mirror_num}" ]] && mirror_url='"https://mirrors.bfsu.edu.cn/pypi/web/simple/"'
+  [[ -z "${mirror_num}" ]] && mirror_url='"https://mirrors.bfsu.edu.cn/pypi/web/simple/"' && mirror_num=5
   [[ ${mirror_num} == 1 ]] && mirror_url='"https://pypi.tuna.tsinghua.edu.cn/simple/"'
   [[ ${mirror_num} == 2 ]] && mirror_url='"https://mirrors.cloud.tencent.com/pypi/simple/"'
   [[ ${mirror_num} == 3 ]] && mirror_url='"http://mirrors.aliyun.com/pypi/simple/"'
