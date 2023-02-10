@@ -5,7 +5,7 @@
 proot容器相关软件及教程:
 [UTermux/ZeroTermux/TermuxWatch下载站](https://blog.utermux.dev/ut/download.html)  
 [zerotermux下载地址](https://d.icdown.club/repository/main/ZeroTermux/ZeroTermux%20-0.118.21.apk)  
-[视频教程和软件下载地址](https://quqi.avyeld.com/s/7472431/hwa9q8OUfjCIN721)  
+[视频教程和软件下载地址](pan.soloxiaoye.top)  
 手机部署真寻交流群:948192110[termux-arm64-真寻交流群](https://jq.qq.com/?_wv=1027&k=rMWrhoIt)
 
 ## 系统要求
@@ -35,6 +35,10 @@ bash <(curl -s -L https://ghproxy.com/raw.githubusercontent.com/soloxiaoye2022/z
 ## 更新
 
 ****
+
+**2023/2/11**
+
+* 新增go-cqhttp密码登陆选项[#2](https://github.com/soloxiaoye2022/zhenxun_bot-deploy/issues/2)
 
 **2022/9/7**
 
