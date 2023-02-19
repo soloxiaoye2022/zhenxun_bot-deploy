@@ -344,7 +344,7 @@ Set_config_bot() {
         while true; do
             read -erp "Bot Password:" bot_password
             read -erp "${Info} 请再次输入密码:" again_password
-            if [ again_password != bot_password ]; then
+            if [ $again_password != $bot_password ]; then
                 echo -e "${Error} 两次输入的密码不一致，请重新输入!"
             else
                 break
