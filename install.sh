@@ -872,7 +872,7 @@ menu_termux() {
     Stop_postgresql
     ;;
   4)
-    Set_check
+    check_module
     ;;
   5)
     Set_Port
