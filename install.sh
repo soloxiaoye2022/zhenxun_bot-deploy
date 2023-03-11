@@ -364,7 +364,7 @@ Set_config() {
     Set_config_admin
     Set_config_bot 
     echo -e "${Info} 开始设置 PostgreSQL 连接语句..."
-    cd ${WORK_DIR}/zhenxun_bot && sed -i 's|bind.*|bind: str = "postgresql://zhenxun:zxpassword@localhost:5432/zhenxun"|g' configs/config.py
+    cd ${WORK_DIR}/zhenxun_bot && sed -i 's|bind.*|bind: str = "postgres://zhenxun:zxpassword@localhost:5432/zhenxun"|g' configs/config.py
   fi
 }
 
