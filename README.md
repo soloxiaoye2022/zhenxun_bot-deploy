@@ -30,7 +30,7 @@ bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-d
 ```
 大陆机器：
 ```bash
-bash <(curl -s -L https://gh.ghproxy.com/raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+bash <(curl -s -L https://mirror.ghproxy.com/raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
 ```
 ## 更新
 
