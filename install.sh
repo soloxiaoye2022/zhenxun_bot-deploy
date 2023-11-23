@@ -2,7 +2,7 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
-update_shell_url="https://gh.ghproxy.com/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh"
+update_shell_url="https://mirror.ghproxy.com/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh"
 zhenxun_url="https://github.com/HibiKier/zhenxun_bot.git"
 WORK_DIR="/root"
 TMP_DIR="$(mktemp -d)"
@@ -11,7 +11,7 @@ ZX_DIR="/root/zhenxun_bot/"
 python_v="python3.8"
 which python3.9 && python_v="python3.9"
 sh_ver="1.0.4.1"
-ghproxy="https://gh.ghproxy.com/"
+ghproxy="https://mirror.ghproxy.com/"
 mirror_url='"https://pypi.org/simple"'
 ssh_port="8022"
 mix="1024"
