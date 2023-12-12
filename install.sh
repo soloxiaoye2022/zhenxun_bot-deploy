@@ -737,11 +737,14 @@ EOF
         psql -l | grep $databaseuser | wc -l
 EOF
     )
-    if [ "$usename" -eq "0" -a "$dbname" -eq "0" ]; then
-        su postgres <<-EOF
-            echo 'CREATE USER zhenxun WITH PASSWORD 'zxpassword';'
-            echo 'CREATE DATABASE zhenxun OWNER zhenxun;'
-            psql
+#    if [ "$usename" -eq "0" -a "$dbname" -eq "0" ]; then
+#        su postgres <<-EOF
+#            echo 'CREATE USER zhenxun WITH PASSWORD 'zxpassword';'
+#            echo 'CREATE DATABASE zhenxun OWNER zhenxun;'
+#            psql
+#EOF
+su postgres <<-EOF
+echo -e "CREATE USER zhenxun WITH PASSWORD 'zxpassword';\n CREATE DATABASE zhenxun OWNER zhenxun;\n" | psql
 EOF
         echo -e "${Info} 创建数据库成功。用户名 $databaseuser
 数据库名 $databaseuser
