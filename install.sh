@@ -749,9 +749,9 @@ EOF
         echo -e "${Info} 创建数据库成功。用户名 $databaseuser
 数据库名 $databaseuser
 密码zxpassword"
-    else
-        echo -e "${Tip} 用户名 ${databaseuser} 或者 数据库 ${databaseuser}已存在"
-    fi
+#    else
+#        echo -e "${Tip} 用户名 ${databaseuser} 或者 数据库 ${databaseuser}已存在"
+#    fi
     echo -e "${Info} pgsql数据库安装完成"
 }
 
