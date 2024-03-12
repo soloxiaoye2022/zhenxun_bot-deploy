@@ -584,6 +584,7 @@ Set_dependency() {
     Set_pip_Mirror
     ${python_v} -m pip install poetry
     poetry env use ${python_v}
+    poetry lock
     poetry install
     poetry run playwright install-deps chromium
     poetry run playwright install chromium
