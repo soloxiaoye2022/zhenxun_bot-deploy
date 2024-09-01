@@ -184,20 +184,19 @@ EOF
             tar -zxf openssl-3.0.7.tar.gz && cd openssl-3.0.7
             ./config -fPIC --prefix=/usr/include/openssl enable-shared
             make && make install
-            msg="_ssl _ssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
-                    -l:libssl.a -Wl,--exclude-libs,libssl.a \
-                    -l:libcrypto.a -Wl,--exclude-libs,libcrypto.a
-                _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
-                    -l:libcrypto.a -Wl,--exclude-libs,libcrypto.a"
+msg='_ssl _ssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
+    -l:libssl.a -Wl,--exclude-libs,libssl.a \
+    -l:libcrypto.a -Wl,--exclude-libs,libcrypto.a
+_hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
+    -l:libcrypto.a -Wl,--exclude-libs,libcrypto.a'
             wget https://mirrors.huaweicloud.com/python/3.11.2/Python-3.11.2.tgz -O "${TMP_DIR}"/Python-3.11.2.tgz && \
-                tar -zxf "${TMP_DIR}"/Python-3.11.2.tgz -C "${TMP_DIR}"/ &&\
-                cd "${TMP_DIR}"/Python-3.11.2 && \
-                echo $msg >> Modules/Setup && \
-                chmod +x configure && \
-                mkdir /usr/local/python-3.11.2 && \
+                tar -zxf "${TMP_DIR}"/Python-3.11.2.tgz -C "${TMP_DIR}"/ 
+                cd "${TMP_DIR}"/Python-3.11.2
+                echo $msg >> Modules/Setup
+                chmod +x configure
+                mkdir /usr/local/python-3.11.2
                 ./configure --prefix=/usr/local/python-3.11.2 --with-zlib=/usr/include/ --with-openssl-rpath=auto  --with-openssl=/usr/include/openssl  OPENSSL_LDFLAGS=-L/usr/include/openssl   OPENSSL_LIBS=-l/usr/include/openssl/ssl OPENSSL_INCLUDES=-I/usr/include/openssl
- && \
-                make -j $(nproc) && \
+                make -j $(nproc)
                 make altinstall
         fi
         apt-get install -y \
