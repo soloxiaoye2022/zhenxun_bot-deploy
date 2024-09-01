@@ -524,14 +524,16 @@ Restart_napcat() {
 
 View_napcat_log() {
     check_installed_napcat_status
+    cd ${napcat_DIR}/napcat/config
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
     tail -f -n 100 ${napcat_DIR}/napcat/logs/napcat_${pathName}.log
 }
 
 Set_config_napcat() {
     check_installed_napcat_status
+    cd ${napcat_DIR}/napcat/config
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
-    vim ${napcat_DIR}/napcat/config/onebot_${pathName}.yml
+    vim ${napcat_DIR}/napcat/config/onebot_${pathName}.json
 }
 
 Set_config_zhenxun() {
