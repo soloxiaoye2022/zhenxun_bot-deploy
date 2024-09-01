@@ -38,6 +38,11 @@ bash <(curl -s -L https://mirror.ghproxy.com/raw.githubusercontent.com/soloxiaoy
 
 **2023/2/11**
 
+* 弃用[Mrs4s / go-cqhttp](https://github.com/Mrs4s/go-cqhttp)，更换为[Napcat](https://github.com/NapNeko/NapCatQQ)，详见[#2471](https://github.com/Mrs4s/go-cqhttp/issues/2471)
+* 重构部分代码，优化安装体验
+
+**2023/2/11**
+
 * 新增go-cqhttp密码登陆选项[#2](https://github.com/soloxiaoye2022/zhenxun_bot-deploy/issues/2)
 
 **2022/9/7**
