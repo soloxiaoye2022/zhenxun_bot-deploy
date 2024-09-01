@@ -60,7 +60,11 @@ check_sys() {
         echo -e "zhenxun_bot 暂不支持该Linux发行版" && exit 1
     fi
     bit=$(uname -m)
-
+    nonomatch=$(cat ~/.zshrc | grep nonomatch)
+    if [[ -z "${nonomatch}" ]];then
+      echo "setopt nonomatch" > /root/.zshrc
+      source ~/.zshrc
+    fi
 }
 
 check_installed_zhenxun_status() {
@@ -157,10 +161,10 @@ Installation_dependency() {
     if [[ ${release} == "centos" ]]; then
         yum -y update
         yum install -y git fontconfig mkfontscale epel-release wget vim zip unzip jq curl xorg-x11-server-Xvfb screen zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make libffi-devel
-        if  ! which python3.8 && ! which python3.9; then
-            wget https://mirrors.huaweicloud.com/python/3.9.10/Python-3.9.10.tgz -O "${TMP_DIR}"/Python-3.9.10.tgz && \
-                tar -zxf "${TMP_DIR}"/Python-3.9.10.tgz -C "${TMP_DIR}"/ &&\
-                cd "${TMP_DIR}"/Python-3.9.10 --with-ensurepip=install && \
+        if  ! which python3.10; then
+            wget https://mirrors.huaweicloud.com/python/3.10.5/Python-3.10.5.tgz -O "${TMP_DIR}"/Python-3.10.5.tgz && \
+                tar -zxf "${TMP_DIR}"/Python-3.10.5.tgz -C "${TMP_DIR}"/ &&\
+                cd "${TMP_DIR}"/Python-3.10.5 --with-ensurepip=install && \
                 ./configure && \
                 make -j $(cat /proc/cpuinfo |grep "processor"|wc -l) && \
                 make altinstall
@@ -181,10 +185,10 @@ EOF
     elif [[ ${release} == "debian" ]]; then
         apt-get update
         apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese wqy* build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
-        if  ! which python3.8 && ! which python3.9 && ! which python3.10;then
-            wget https://mirrors.huaweicloud.com/python/3.9.10/Python-3.9.10.tgz -O "${TMP_DIR}"/Python-3.9.10.tgz && \
-                tar -zxf "${TMP_DIR}"/Python-3.9.10.tgz -C "${TMP_DIR}"/ &&\
-                cd "${TMP_DIR}"/Python-3.9.10 && \
+        if  ! which python3.11 && ! which python3.12 && ! which python3.10;then
+            wget https://mirrors.huaweicloud.com/python/3.10.5/Python-3.10.5.tgz -O "${TMP_DIR}"/Python-3.10.5.tgz && \
+                tar -zxf "${TMP_DIR}"/Python-3.10.5.tgz -C "${TMP_DIR}"/ &&\
+                cd "${TMP_DIR}"/Python-3.10.5 && \
                 ./configure --with-ensurepip=install && \
                 make -j $(cat /proc/cpuinfo |grep "processor"|wc -l) && \
                 make altinstall
@@ -220,9 +224,9 @@ EOF
         apt-get install -y software-properties-common ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming
         fc-cache -f -v
         echo -e "\n" | add-apt-repository ppa:deadsnakes/ppa
-        if  ! which python3.8 && ! which python3.9 && ! which python3.10;then
-            apt-get install -y python3.9-full
-            python_v="python3.9"
+        if  ! which python3.11 && ! which python3.12 && ! which python3.10;then
+            apt-get install -y python3.10-full
+            python_v="python3.10"
         fi
         apt-get install -y \
             vim \
@@ -254,7 +258,11 @@ EOF
         pacman -Sy python python-pip unzip --noconfirm
     fi
 
-    if which python3.10; then
+    if which python3.12; then
+      python_v="python3.12"
+    elif which python3.11; then
+      python_v="python3.11"
+    elif which python3.10; then
       python_v="python3.10"
     elif which python3.9; then 
       python_v="python3.9"
