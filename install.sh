@@ -9,7 +9,6 @@ TMP_DIR="$(mktemp -d)"
 napcat_DIR="/opt/QQ/resources/app/app_launcher"
 ZX_DIR="/root/zhenxun_bot/"
 sh_ver="2.0.0"
-ghproxy="https://mirror.ghproxy.com/"
 mirror_url='"https://pypi.org/simple"'
 musicSignUrl="http://napcat-sign.wumiao.wang:2052/music_sign"
 ssh_port="8022"
@@ -118,41 +117,36 @@ Set_pip_Mirror() {
 Set_ghproxy() {
   echo -e "${Info} 是否使用 ghproxy 代理git相关的下载？(中国大陆建议使用)"
   read -erp "请选择 [y/n], 默认为 y:" ghproxy_check
-  [[ -z "${ghproxy_check}" ]] && ghproxy_check='y'
-  [[ ${ghproxy_check} == 'n' ]] && ghproxy=""
+  if [[ -z "${ghproxy_check}" ]];then
+    network_test
+  elif [[ ${ghproxy_check} == 'n' ]];then
+    ghproxy=""
+    echo -e "${Info} 代理已关闭，将直接连接GitHub..."
+  elif [[ ${ghproxy_check} == 'y' ]];then
+    network_test
+  fi
 }
 
 network_test() {
-    target_proxy=""
+    ghproxy=""
+    found=0
     proxy_num=${proxy_num:-9}
-    proxy_arr=("https://github.moeyy.xyz" "https://mirror.ghproxy.com" "https://gh-proxy.com" "https://x.haod.me")
+    proxy_arr=("https://github.moeyy.xyz" "https://gh-proxy.com" "https://x.haod.me" "https://mirror.ghproxy.com")
     check_url="https://raw.githubusercontent.com/NapNeko/NapCatQQ/main/package.json"
+    for proxy in "${proxy_arr[@]}"; do
+      status=$(curl -o /dev/null -s -w "%{http_code}" "$proxy/$check_url")
+      if [ $status -eq 200 ]; then
+        found=1
+        ghproxy="$proxy"
+        echo -e "${Info} 将使用代理：$proxy"
+        break
+      fi
+    done
 
-    if [ ! -z "$proxy_num" ] && [ "$proxy_num" -ge 1 ] && [ "$proxy_num" -le ${#proxy_arr[@]} ]; then
-        echo "手动指定代理：${proxy_arr[$proxy_num-1]}"
-        target_proxy="${proxy_arr[$proxy_num-1]}"
-    else
-        if [ "$proxy_num" -ne 0 ]; then
-            echo "proxy 未指定或超出范围，正在检查${parm1}代理可用性..."
-            for proxy in "${proxy_arr[@]}"; do
-                status=$(curl -o /dev/null -s -w "%{http_code}" "$proxy/$check_url")
-                if [ $status -eq 200 ]; then
-                    found=1
-                    target_proxy="$proxy"
-                    echo "将使用代理：$proxy"
-                    break
-                fi
-            done
-
-            if [ $found -eq 0 ]; then
-                echo "无法连接到GitHub，请检查网络。"
-                exit 1
-            fi
-        else
-            echo "代理已关闭，将直接连接GitHub..."
-        fi
+    if [ $found -eq 0 ]; then
+      echo -e "${Error} 无法连接到GitHub，请检查网络。"
+        exit 1
     fi
-    napcat_download_url="${target_proxy:+${target_proxy}/}https://github.com/NapNeko/NapCatQQ/releases/download/$napcat_version/NapCat.Shell.zip"
 }
 
 
@@ -203,8 +197,8 @@ EOF
                 mkdir /usr/local/python-3.11.2 && \
                 ./configure --prefix=/usr/local/python-3.11.2 --with-zlib=/usr/include/ --with-openssl-rpath=auto  --with-openssl=/usr/include/openssl  OPENSSL_LDFLAGS=-L/usr/include/openssl   OPENSSL_LIBS=-l/usr/include/openssl/ssl OPENSSL_INCLUDES=-I/usr/include/openssl
  && \
-                make -j $(nproc) && make altinstall
-
+                make -j $(nproc) && \
+                make altinstall
         fi
         apt-get install -y \
             vim \
@@ -455,8 +449,8 @@ echo -e "${Info} 请设置zhenxun_bot napcat通信端口:取值范围[""${Green_
     read -erp "Port:" Port
     [[ -z "${Port}" ]] && Port=""
       if [ "${Port}" -ge ${mix} -a "${Port}" -le ${max} ]; then
-        cd ${napcat_DIR}/napcat/config  && sed -i -e 's/"urls".*/"urls": ['"ws://127.0.0.1:${Port}/onebot/v11/ws/"']/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
-        cd ${WORK_DIR}/zhenxun_bot && sed -i "s/PORT.*/PORT = $Port/g" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
+        cd ${napcat_DIR}/napcat/config  && sed -i -e 's/"urls":.*/"urls": ["'"ws:\/\/127.0.0.1:$Port\/onebot\/v11\/ws\/"'"]/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
+        cd ${WORK_DIR}/zhenxun_bot && sed -i -e "s/PORT.*/PORT = ${Port}/" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
         echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${Port}"${Font_color_suffix}""]"
       else 
         echo -e "${Error} 端口设置错误，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
