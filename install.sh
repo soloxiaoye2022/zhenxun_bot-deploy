@@ -501,7 +501,7 @@ Set_config_zhenxun() {
 Start_napcat() {
     check_installed_napcat_status
     check_pid_napcat
-    cd $napcat_DIR
+    cd $napcat_DIR/config/
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
     [[ -n ${PID} ]] && echo -e "${Error} napcat 正在运行，请检查 !" && exit 1
     cd ${napcat_DIR}/napcat/logs || exit
