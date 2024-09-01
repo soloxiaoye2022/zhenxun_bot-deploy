@@ -386,9 +386,15 @@ Download_zhenxun_bot() {
 }   
 
 Install_napcat() {
+  while true; do
     curl -o napcat.sh https://nclatest.znin.net/NapNeko/NapCat-Installer/main/script/install.sh && echo -e "n\n" | sudo bash napcat.sh
-
-
+    if [ $? = 0 ] ; then
+      break
+    else
+      echo -e "${Error} napcat 下载失败！3秒后重试下载..."
+    fi
+    sleep 3
+  done
 
 }
 
