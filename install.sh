@@ -384,7 +384,7 @@ Set_config_admin() {
     if [[ -z "$admin_qq" ]]; then
       echo -e "${Error} 管理员QQ不能为空，请重新输入！"
       Set_config_admin
-    elif [[ "$admin_qq" =~ ^[0-9]+$ ]]; then
+    elif [[ ! "$admin_qq" =~ ^[0-9]+$ ]]; then
       echo -e "${Error} 管理员QQ必须是数字，请重新输入！"
       Set_config_admin
     fi
@@ -400,7 +400,7 @@ Set_config_bot() {
     if [[ -z "$bot_qq" ]]; then
       echo -e "${Error} Bot QQ不能为空，请重新输入！"
       Set_config_admin
-    elif [[ "$bot_qq" =~ ^[0-9]+$ ]]; then
+    elif [[ ! "$bot_qq" =~ ^[0-9]+$ ]]; then
       echo -e "${Error} Bot QQ必须是数字，请重新输入！"
       Set_config_admin
     fi
