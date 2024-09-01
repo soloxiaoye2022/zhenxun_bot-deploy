@@ -389,6 +389,7 @@ Install_napcat() {
   while true; do
     curl -o napcat.sh https://nclatest.znin.net/NapNeko/NapCat-Installer/main/script/install.sh && echo -e "n\n" | sudo bash napcat.sh
     if [ $? = 0 ] ; then
+      mkdir ${napcat_DIR}/napcat/logs/
       break
     else
       echo -e "${Error} napcat 下载失败！3秒后重试下载..."
@@ -502,9 +503,9 @@ Start_napcat() {
     check_installed_napcat_status
     check_pid_napcat
     cd $napcat_DIR/config/
-    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    pathName=$(jq '.pathName' onebot11.json | sed 's/\"//g')
     [[ -n ${PID} ]] && echo -e "${Error} napcat 正在运行，请检查 !" && exit 1
-    cd ${napcat_DIR}/napcat/logs || exit
+    cd ${napcat_DIR}/napcat/logs
     nohup xvfb-run -a qq --no-sandbox -q ${pathName} >> napcat_$pathName.log 2>&1 &
     echo -e "${Info} napcat 开始运行..."
     sleep 2
@@ -559,14 +560,14 @@ Restart_napcat() {
 View_napcat_log() {
     check_installed_napcat_status
     cd ${napcat_DIR}/napcat/config
-    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    pathName=$(jq '.pathName' napcat.json | sed 's/\"//g')
     tail -f -n 100 ${napcat_DIR}/napcat/logs/napcat_${pathName}.log
 }
 
 Set_config_napcat() {
     check_installed_napcat_status
     cd ${napcat_DIR}/napcat/config
-    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    pathName=$(jq '.pathName' napcat.json | sed 's/\"//g')
     vim ${napcat_DIR}/napcat/config/onebot_${pathName}.json
 }
 
