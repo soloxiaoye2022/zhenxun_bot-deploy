@@ -59,10 +59,12 @@ check_sys() {
         echo -e "zhenxun_bot 暂不支持该Linux发行版" && exit 1
     fi
     bit=$(uname -m)
-    nonomatch=$(cat ~/.zshrc | grep nonomatch)
-    if [[ -z "${nonomatch}" ]];then
-      echo "setopt nonomatch" >> /root/.zshrc
-      source ~/.zshrc
+    if [[ ! -e "~/.zshrc" ]];then
+      nonomatch=$(cat ~/.zshrc | grep nonomatch)
+      if [[ -z "${nonomatch}" ]];then
+        echo "setopt nonomatch" >> /root/.zshrc
+        source ~/.zshrc
+      fi
     fi
 }
 
