@@ -703,8 +703,8 @@ Uninstall_All() {
     check_pid_napcat
     [[ -z ${PID} ]] || kill -9 "${PID}"
     echo -e "${Info} 开始卸载 napcat..."
-    rm -rf napcat || echo -e "${Error} napcat 卸载失败！"
-    echo -e "${Info} 感谢使用真寻bot，期待于你的下次相会！"
+    rm -rf ${napcat_DIR}/napcat || echo -e "${Error} napcat 卸载失败！"
+    echo -e "${Info} 感谢使用真寻bot，期待与你的下次相会！"
   fi
   echo -e "${Info} 操作已取消..." && menu_zhenxun
 }
