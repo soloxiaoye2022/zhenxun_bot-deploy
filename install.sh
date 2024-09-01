@@ -705,8 +705,9 @@ Uninstall_All() {
     echo -e "${Info} 开始卸载 napcat..."
     rm -rf ${napcat_DIR}/napcat || echo -e "${Error} napcat 卸载失败！"
     echo -e "${Info} 感谢使用真寻bot，期待与你的下次相会！"
+  else
+    echo -e "${Info} 操作已取消..." && menu_zhenxun
   fi
-  echo -e "${Info} 操作已取消..." && menu_zhenxun
 }
 
 Install_zhenxun_bot() {
