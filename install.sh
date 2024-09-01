@@ -190,7 +190,7 @@ EOF
                 tar -zxf "${TMP_DIR}"/Python-3.10.5.tgz -C "${TMP_DIR}"/ &&\
                 cd "${TMP_DIR}"/Python-3.10.5 && \
                 ./configure --with-ensurepip=install && \
-                make -j $(cat /proc/cpuinfo |grep "processor"|wc -l) && \
+                make -j $(nproc) && \
                 make altinstall
         fi
         apt-get install -y \
@@ -397,7 +397,7 @@ Set_config_admin() {
       Set_config_admin
     fi
     cd ${WORK_DIR}/zhenxun_bot && sed -i "s/SUPERUSERS.*/SUPERUSERS=[\"$admin_qq\"]/g" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
-    cd ${WORK_DIR}/zhenxun_bot && sed -i -e 's/"qq".*/"qq": ["'"$admin_qq"'"]/' .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
+    cd ${WORK_DIR}/zhenxun_bot && sed -i -e 's/"qq".*/"qq": ["'"$admin_qq"'"]/g' .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
     echo -e "${Info} 设置成功!管理员QQ: [""${Green_font_prefix}"${admin_qq}"${Font_color_suffix}""]"
     
 }
@@ -422,9 +422,9 @@ Set_config_bot() {
       else
         cd ${napcat_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
       fi
-      cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-      cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-      cd ${napcat_DIR}/napcat/config && sed -i -e 's/"musicSignUrl".*/"musicSignUrl": '"$musicSignUrl"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+      cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/g' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+      cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/g' onebot11.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+      cd ${napcat_DIR}/napcat/config && sed -i -e 's/"musicSignUrl".*/"musicSignUrl": '"$musicSignUrl"'/g' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
       echo -e "${Info} 设置成功!Bot QQ: [""${Green_font_prefix}"${bot_qq}"${Font_color_suffix}""]"
       Set_Port
     fi 
@@ -443,10 +443,11 @@ echo -e "${Info} 请设置zhenxun_bot napcat通信端口:取值范围[""${Green_
     [[ -z "${Port}" ]] && Port=""
       if [ "${Port}" -ge ${mix} -a "${Port}" -le ${max} ]; then
         cd ${napcat_DIR}/napcat/config  && sed -i -e 's/"urls".*/"urls": ['"ws://127.0.0.1:${Port}/onebot/v11/ws/"']/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
-    echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${Port}"${Font_color_suffix}""]"
+        cd ${WORK_DIR}/zhenxun_bot && sed -i "s/PORT.*/PORT = $Port/g" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
+        echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${Port}"${Font_color_suffix}""]"
       else 
-      echo -e "${Error} 端口设置错误，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
-      Set_Port
+        echo -e "${Error} 端口设置错误，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
+        Set_Port
      fi     
 }
 Restart_zx_napcat() {
