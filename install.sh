@@ -6,11 +6,12 @@ update_shell_url="https://mirror.ghproxy.com/https://raw.githubusercontent.com/s
 zhenxun_url="https://github.com/HibiKier/zhenxun_bot.git"
 WORK_DIR="/root"
 TMP_DIR="$(mktemp -d)"
-GOCQ_DIR="/root/go-cqhttp"
+napcat_DIR="/opt/QQ/resources/app/app_launcher"
 ZX_DIR="/root/zhenxun_bot/"
-sh_ver="1.0.4.1"
+sh_ver="2.0.0"
 ghproxy="https://mirror.ghproxy.com/"
 mirror_url='"https://pypi.org/simple"'
+musicSignUrl="http://napcat-sign.wumiao.wang:2052/music_sign"
 ssh_port="8022"
 mix="1024"
 max="49151"
@@ -66,8 +67,8 @@ check_installed_zhenxun_status() {
   [[ ! -e "${WORK_DIR}/zhenxun_bot/bot.py" ]] && echo -e "${Error} zhenxun_bot 没有安装，请检查 !" && exit 1
 }
 
-check_installed_cqhttp_status() {
-  [[ ! -e "${WORK_DIR}/go-cqhttp/go-cqhttp" ]] && echo -e "${Error} go-cqhttp 没有安装，请检查 !" && exit 1
+check_installed_napcat_status() {
+  [[ ! -e "${WORK_DIR}/napcat" ]] && echo -e "${Error} napcat 没有安装，请检查 !" && exit 1
 }
 
 check_pid_zhenxun() {
@@ -75,9 +76,14 @@ check_pid_zhenxun() {
   PID=$(pgrep -f "bot.py")
 }
 
-check_pid_cqhttp() {
+check_pid_napcat() {
   #PID=$(ps -ef | grep "sergate" | grep -v grep | grep -v ".sh" | grep -v "init.d" | grep -v "service" | awk '{print $2}')
-  PID=$(pgrep -f "go-cqhttp")
+  PID=$(ps -ef | grep xvfb | grep -v grep | grep -v tmp | awk '{print $2}')
+}
+
+check_pid_postgres() {
+  #PID=$(ps -ef | grep "sergate" | grep -v grep | grep -v ".sh" | grep -v "init.d" | grep -v "service" | awk '{print $2}')
+  PID=$(pgrep -f "postgresql")
 }
 
 Set_pip_Mirror() {
@@ -115,7 +121,7 @@ Set_ghproxy() {
 Installation_dependency() {
     if [[ ${release} == "centos" ]]; then
         yum -y update
-        yum install -y git fontconfig mkfontscale epel-release wget vim curl zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make libffi-devel
+        yum install -y git fontconfig mkfontscale epel-release wget vim zip unzip jq curl xorg-x11-server-Xvfb screen zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make libffi-devel
         if  ! which python3.8 && ! which python3.9; then
             wget https://mirrors.huaweicloud.com/python/3.9.10/Python-3.9.10.tgz -O "${TMP_DIR}"/Python-3.9.10.tgz && \
                 tar -zxf "${TMP_DIR}"/Python-3.9.10.tgz -C "${TMP_DIR}"/ &&\
@@ -139,7 +145,7 @@ EOF
         su postgres -c "psql -f /tmp/sql.sql"
     elif [[ ${release} == "debian" ]]; then
         apt-get update
-        apt-get install -y wget ttf-wqy-zenhei xfonts-intl-chinese wqy* build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
+        apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese wqy* build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
         if  ! which python3.8 && ! which python3.9 && ! which python3.10;then
             wget https://mirrors.huaweicloud.com/python/3.9.10/Python-3.9.10.tgz -O "${TMP_DIR}"/Python-3.9.10.tgz && \
                 tar -zxf "${TMP_DIR}"/Python-3.9.10.tgz -C "${TMP_DIR}"/ &&\
@@ -152,6 +158,12 @@ EOF
             vim \
             wget \
             git \
+            zip \
+            unzip \
+            jq \
+            curl \
+            xvfb \
+            screen \
             ffmpeg \
             libgl1 \
             libglib2.0-0 \
@@ -181,6 +193,12 @@ EOF
             vim \
             wget \
             git \
+            zip \
+            unzip \
+            jq \
+            curl \
+            xvfb \
+            screen \
             ffmpeg \
             libgl1 \
             libglib2.0-0 \
@@ -222,7 +240,7 @@ check_arch() {
   elif [[ ${get_arch} == "v8l" ]]; then
     arch="arm64"
   else
-    echo -e "${Error} go-cqhttp 不支持该内核版本(${get_arch})..." && exit 1
+    echo -e "${Error} napcat 不支持该内核版本(${get_arch})..." && exit 1
   fi
 }
 
@@ -299,12 +317,12 @@ Download_zhenxun_bot() {
   fi
   sleep 3
  done
-    echo -e "${Info} 开始下载最新版 go-cqhttp ..."
-    Download_gocq
+    echo -e "${Info} 开始安装 napcat ..."
+    Install_napcat
     cd "${WORK_DIR}" || exit 1
     mv "${TMP_DIR}/zhenxun_bot" ./
-    mkdir -p "go-cqhttp"
-    tar -zxf "${TMP_DIR}/go-cqhttp.tar.gz" -C ./go-cqhttp/
+    mkdir -p "napcat"
+    tar -zxf "${TMP_DIR}/napcat.tar.gz" -C ./napcat/
     echo -e "${Info} 开始下载抽卡相关资源..."
     if [[ -e "${WORK_DIR}/zhenxun_bot/draw_card" ]]; then
         echo -e "${Info} 抽卡资源文件已存在，跳过下载"
@@ -318,17 +336,11 @@ Download_zhenxun_bot() {
    fi
 }   
 
-Download_gocq() {
- while true; do
-  gocq_version=$(wget -O- -t1 -T2 "https://api.github.com/repos/Mrs4s/go-cqhttp/releases/latest" --no-check-certificate | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
-     wget -O- "${ghproxy}https://github.com/Mrs4s/go-cqhttp/releases/download/${gocq_version}/go-cqhttp_$(uname -s)_${arch}.tar.gz" --no-check-certificate -O go-cqhttp.tar.gz
-   if [ $? = 0 ] ; then
-      break
-   else
-      echo -e "${Error} go-cqhttp 下载失败！3秒后重试下载..."
-      sleep 3
-   fi
- done
+Install_napcat() {
+    curl -o napcat.sh https://nclatest.znin.net/NapNeko/NapCat-Installer/main/script/install.sh && echo -e "n\n" | sudo bash napcat.sh
+
+
+
 }
 
 Set_config_admin() {
@@ -336,69 +348,56 @@ Set_config_admin() {
     read -erp "管理员QQ:" admin_qq
     [[ -z "$admin_qq" ]] && admin_qq=""
     cd ${WORK_DIR}/zhenxun_bot && sed -i "s/SUPERUSERS.*/SUPERUSERS=[\"$admin_qq\"]/g" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
+    cd ${WORK_DIR}/zhenxun_bot && sed -i -e 's/"qq".*/"qq": ["'"$admin_qq"'"]/' .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
     echo -e "${Info} 设置成功!管理员QQ: [""${Green_font_prefix}"${admin_qq}"${Font_color_suffix}""]"
     
 }
 
 Set_config_bot() {
-    echo -e "${Info} 请输入Bot QQ账号:[QQ]"
-    read -erp "Bot QQ:" bot_qq
-    [[ -z "$bot_qq" ]] && bot_qq=""
-    if [ "$bot_qq" = "$admin_qq" ]; then
-      echo -e "${Error} Bot QQ[""${Green_font_prefix}"$bot_qq"${Font_color_suffix}""]不能与管理员QQ账号[""${Green_font_prefix}"$admin_qq"${Font_color_suffix}""]一致"
-      Set_config_bot
+    if [[ -e "${WORK_DIR}/napcat/config/onebot11_$bot_qq.json" ]]; then
+      echo -e "${Info} napcat 配置文件已存在，跳过生成"
     else
-      cd ${WORK_DIR}/go-cqhttp && sed -i "s/uin:.*/uin: $bot_qq # QQ账号/g" config.yml || echo -e "${Error} 配置文件不存在！请检查go-cqhttp是否安装正确!"
-      echo -e "${Info} 设置成功!Bot QQ: [""${Green_font_prefix}"${bot_qq}"${Font_color_suffix}""]"
+      cd ${WORK_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
+      echo -e "${Info} 请输入Bot QQ账号:[QQ]"
+      read -erp "Bot QQ:" bot_qq
+      [[ -z "$bot_qq" ]] && bot_qq=""
+      if [ "$bot_qq" = "$admin_qq" ]; then
+        echo -e "${Error} Bot QQ[""${Green_font_prefix}"$bot_qq"${Font_color_suffix}""]不能与管理员QQ账号[""${Green_font_prefix}"$admin_qq"${Font_color_suffix}""]一致"
+        Set_config_bot
+      else
+        cd ${WORK_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+        cd ${WORK_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+        cd ${WORK_DIR}/napcat/config && sed -i -e 's/"musicSignUrl".*/"musicSignUrl": '"$musicSignUrl"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+        echo -e "${Info} 设置成功!Bot QQ: [""${Green_font_prefix}"${bot_qq}"${Font_color_suffix}""]"
+        Set_Port
+      fi
     fi
-    echo -e "${Info} 请选择Bot 登陆方式(默认为扫码登陆)"
-    read -erp "请选择 [1-2], 默认为 1:" login_mode
-    if [[ ${login_mode} == '2' ]]; then
-        echo -e "${Info} 请下载滑动验证助手进行滑条验证https://github.com/KasukuSakura/mirai-login-solver-sakura/releases"
-        echo -e "${Info} 请输入Bot QQ密码:[Password]"
-        while true; do
-            read -erp "Bot Password:" bot_password
-            read -erp "请再次输入密码:" again_password
-            if [ "$again_password" != "$bot_password" ]; then
-                echo -e "${Error} 两次输入的密码不一致，请重新输入!"
-            else
-                break
-            fi
-        done
-        cd ${WORK_DIR}/go-cqhttp && sed -i "s/password:.*/password: '$bot_password' # 密码为空时使用扫码登录/g" config.yml || echo -e "${Error} 配置文件不存在！请检查go-cqhttp是否安装正确!"
-        echo -e "${Info} 设置成功!Bot Password: [""${Green_font_prefix}"${bot_password}"${Font_color_suffix}""]"
-    fi
+    
 }
 
-Set_config() {
-     if [[ -e "${WORK_DIR}/go-cqhttp/config.yml" ]]; then
-        echo -e "${Info} go-cqhttp 配置文件已存在，跳过生成"
-    else
-        cd ${WORK_DIR}/go-cqhttp && echo -e "3\n" | ./go-cqhttp > /dev/null 2>&1
-    Set_Port 
+Set_config() { 
     Set_config_admin
-    Set_config_bot 
+    Set_config_bot
     echo -e "${Info} 开始设置 PostgreSQL 连接语句..."
-    cd ${WORK_DIR}/zhenxun_bot && sed -i 's|bind.*|bind: str = "postgres://zhenxun:zxpassword@localhost:5432/zhenxun"|g' configs/config.py
-  fi
+    cd ${WORK_DIR}/zhenxun_bot && sed -i 's|DB_URL.*|DB_URL = "postgres://zhenxun:zxpassword@localhost:5432/zhenxun"|g' .env.dev
 }
 
 Set_Port() {
-echo -e "${Info} 请设置zhenxun_bot gocq通信端口:取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
+echo -e "${Info} 请设置zhenxun_bot napcat通信端口:取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
     read -erp "Port:" Port
     [[ -z "${Port}" ]] && Port=""
       if [ "${Port}" -ge ${mix} -a "${Port}" -le ${max} ]; then
-        cd ${WORK_DIR}/zhenxun_bot  && sed -i "s|PORT.*|PORT = ${Port}|g" .env.dev && cd ${WORK_DIR}/go-cqhttp && sudo sed -i "s|universal:.*|universal: ws://127.0.0.1:${Port}/onebot/v11/ws|g" config.yml || (echo -e "${Error} 配置文件不存在！请检查 zhenxun_bot 或 gocq是否安装正确!" && exit 1)
+        cd ${WORK_DIR}/napcat/config  && sed -i -e 's/"urls".*/"urls": ['"ws://127.0.0.1:${Port}/onebot/v11/ws/"']/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
     echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${Port}"${Font_color_suffix}""]"
       else 
       echo -e "${Error} 端口设置错误，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
       Set_Port
      fi     
 }
-Restart_zx_gocq() {
+Restart_zx_napcat() {
      Set_Port
      Restart_zhenxun_bot
-     Restart_cqhttp
+     Restart_napcat
 }
 Start_zhenxun_bot() {
     check_installed_zhenxun_status
@@ -431,13 +430,14 @@ Set_config_zhenxun() {
     vim "${WORK_DIR}"/zhenxun_bot/configs/config.yaml
 }
 
-Start_cqhttp() {
-    check_installed_cqhttp_status
-    check_pid_cqhttp
-    [[ -n ${PID} ]] && echo -e "${Error} go-cqhttp 正在运行，请检查 !" && exit 1
-    cd ${WORK_DIR}/go-cqhttp || exit
-    nohup ./go-cqhttp -faststart >> go-cqhttp.log 2>&1 &
-    echo -e "${Info} go-cqhttp 开始运行..."
+Start_napcat() {
+    check_installed_napcat_status
+    check_pid_napcat
+    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    [[ -n ${PID} ]] && echo -e "${Error} napcat 正在运行，请检查 !" && exit 1
+    cd ${WORK_DIR}/napcat/logs || exit
+    nohup xvfb-run -a qq --no-sandbox -q ${pathName} >> napcat_$pathName.log 2>&1 &
+    echo -e "${Info} napcat 开始运行..."
     sleep 2
 }
 
@@ -449,12 +449,11 @@ else
 su postgres <<-EOF
      pg_createcluster 13 main --start
      chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
-     chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
      /etc/init.d/postgresql start
 EOF
 
 fi
-echo -e "${Info} pgsql数据库已重启"
+echo -e "${Info} postgresql数据库已重启"
 }
 
 Stop_postgresql() {
@@ -467,7 +466,7 @@ su postgres <<-EOF
 EOF
 
 fi
-echo -e "${Info} pgsql数据库已停止"
+echo -e "${Info} postgresql数据库已停止"
 }
 
 Restart_postgresql() {
@@ -475,25 +474,27 @@ Stop_postgresql
 Start_postgresql
 }
 
-Stop_cqhttp() {
-    check_installed_cqhttp_status
-    check_pid_cqhttp
-    [[ -z ${PID} ]] && echo -e "${Error} cqhttp 没有运行，请检查 !" && exit 1
+Stop_napcat() {
+    check_installed_napcat_status
+    check_pid_napcat
+    [[ -z ${PID} ]] && echo -e "${Error} napcat 没有运行，请检查 !" && exit 1
     kill -9 "${PID}"
-    echo -e "${Info} go-cqhttp 停止运行..."
+    echo -e "${Info} napcat 停止运行..."
 }
 
-Restart_cqhttp() {
-    Stop_cqhttp
-    Start_cqhttp
+Restart_napcat() {
+    Stop_napcat
+    Start_napcat
 }
 
-View_cqhttp_log() {
-    tail -f -n 100 ${WORK_DIR}/go-cqhttp/go-cqhttp.log
+View_napcat_log() {
+    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    tail -f -n 100 ${WORK_DIR}/napcat/logs/napcat_${pathName}.log
 }
 
-Set_config_cqhttp() {
-    vim ${WORK_DIR}/go-cqhttp/config.yml
+Set_config_napcat() {
+    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    vim ${WORK_DIR}/napcat/config/onebot_${pathName}.yml
 }
 
 Set_config_zhenxun() {
@@ -585,13 +586,23 @@ read -erp "请输入镜像站地址(示例https://mirrors.bfsu.edu.cn/):" input
 fi
 }
 
-Exit_cqhttp() {
-    cd ${WORK_DIR}/go-cqhttp || exit
-    rm -f session.token
-    echo -e "${Info} go-cqhttp 账号已退出..."
-    Stop_cqhttp
-    sleep 3
-    menu_cqhttp
+View_napcat_webui_info() {
+    cd ${WORK_DIR}/napcat/config || exit
+    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    token=$(jq '.token' webui.json | sed 's/\"//g')
+    port=$(jq '.port' webui.json | sed 's/\"//g')
+    local_ipv4=$(ip addr show | grep -v docker | grep -v br-.* | grep -v "host lo" | grep 'inet ' | awk '{print $2}' | head -n 1 | cut -d'/' -f1)
+    public_ipv4=$(curl 4.ipw.cn)
+    public_ipv6=$(curl 6.ipw.cn)
+    echo -e "${Info} 当前bot QQ：${pathName}"
+    echo -e "${Info} 登录密钥（token）：${token}"
+    echo -e "${Info} webui地址："
+    echo -e "${Info} 内网v4：http://${local_ipv4}:${port}/webui/login.html"
+    echo -e "${Info} 公网v4：http://${public_ipv4}:${port}/webui/login.html"
+    echo -e "${Info} 公网v6：http://[${public_ipv6}]:${port}/webui/login.html"
+    echo "请按任意键返回..."
+    read -n 1 -s
+    menu_napcat
 }
 
 Set_dependency() {
@@ -639,7 +650,7 @@ read -erp "Port:" num
 }
 
 Uninstall_All() {
-  echo -e "${Tip} 是否完全卸载 zhenxun_bot 和 go-cqhttp？(此操作不可逆)"
+  echo -e "${Tip} 是否完全卸载 zhenxun_bot 和 napcat？(此操作不可逆)"
   read -erp "请选择 [y/n], 默认为 n:" uninstall_check
   [[ -z "${uninstall_check}" ]] && uninstall_check='n'
   if [[ ${uninstall_check} == 'y' ]]; then
@@ -648,10 +659,10 @@ Uninstall_All() {
     [[ -z ${PID} ]] || kill -9 "${PID}"
     echo -e "${Info} 开始卸载 zhenxun_bot..."
     rm -rf zhenxun_bot || echo -e "${Error} zhenxun_bot 卸载失败！"
-    check_pid_cqhttp
+    check_pid_napcat
     [[ -z ${PID} ]] || kill -9 "${PID}"
-    echo -e "${Info} 开始卸载 go-cqhttp..."
-    rm -rf go-cqhttp || echo -e "${Error} go-cqhttp 卸载失败！"
+    echo -e "${Info} 开始卸载 napcat..."
+    rm -rf napcat || echo -e "${Error} napcat 卸载失败！"
     echo -e "${Info} 感谢使用真寻bot，期待于你的下次相会！"
   fi
   echo -e "${Info} 操作已取消..." && menu_zhenxun
@@ -685,9 +696,9 @@ Install_zhenxun_bot() {
     ((outTime=($endTime-$startTime)))
     echo -e "${Info} 安装用时 ${outTime} s ..."
     Start_zhenxun_bot
-    Start_cqhttp
+    Start_napcat
     echo -e "${Info} 请扫描二维码登录 bot，bot 账号登录完成后，使用Ctrl + C退出 !"
-    View_cqhttp_log
+    View_napcat_log
     
 }
 
@@ -713,7 +724,6 @@ else
   su postgres <<-EOF
      pg_createcluster 13 main --start
      echo -e "${Info} 检测到pgsql数据库文件权限问题...\n开始修复pgsql数据库"
-     chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
      chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
      echo -e "${Info} 修复完成，启动pgsql数据库"
 EOF
@@ -791,42 +801,39 @@ Update_Shell(){
     exit 0
 }
 
-menu_cqhttp() {
-  echo && echo -e "  go-cqhttp 一键安装管理脚本修改版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
+menu_napcat() {
+  echo && echo -e "  zhenxun_bot 一键安装管理脚本修改版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
   -- Sakura | github.com/AkashiCoin --
  ${Green_font_prefix} 0.${Font_color_suffix} 升级脚本
  ————————————
- ${Green_font_prefix} 1.${Font_color_suffix} 安装 zhenxun_bot + go-cqhttp
+ ${Green_font_prefix} 1.${Font_color_suffix} 安装 zhenxun_bot + napcat
 ————————————
- ${Green_font_prefix} 2.${Font_color_suffix} 启动 go-cqhttp
- ${Green_font_prefix} 3.${Font_color_suffix} 停止 go-cqhttp
- ${Green_font_prefix} 4.${Font_color_suffix} 重启 go-cqhttp
+ ${Green_font_prefix} 2.${Font_color_suffix} 启动 napcat
+ ${Green_font_prefix} 3.${Font_color_suffix} 停止 napcat
+ ${Green_font_prefix} 4.${Font_color_suffix} 重启 napcat
 ————————————
- ${Green_font_prefix} 5.${Font_color_suffix} 设置 bot QQ账号/密码
- ${Green_font_prefix} 6.${Font_color_suffix} 修改 go-cqhttp 配置文件
- ${Green_font_prefix} 7.${Font_color_suffix} 查看 go-cqhttp 日志
+ ${Green_font_prefix} 5.${Font_color_suffix} 更换 bot QQ 账号
+ ${Green_font_prefix} 6.${Font_color_suffix} 修改 napcat 配置文件
+ ${Green_font_prefix} 7.${Font_color_suffix} 查看 napcat 日志
 ————————————
- ${Green_font_prefix} 8.${Font_color_suffix} 退出 go-cqhttp 账号
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix} 8.${Font_color_suffix} 查看 webui 信息
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 postgresql 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
-if [[ -e "${WORK_DIR}/go-cqhttp/go-cqhttp" ]]; then
-    check_pid_cqhttp
+if [[ -e "${WORK_DIR}/napcat" ]]; then
+    check_pid_napcat
     if [[ -n "${PID}" ]]; then
-      echo -e " 当前状态: go-cqhttp ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
+      echo -e " 当前状态: napcat ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
     else
-      echo -e " 当前状态: go-cqhttp ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
+      echo -e " 当前状态: napcat ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
     fi
   else
-    if [[ -e "${file}/go-cqhttp/go-cqhttp" ]]; then
-      check_pid_cqhttp
-      if [[ -n "${PID}" ]]; then
-        echo -e " 当前状态: go-cqhttp ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
-      else
-        echo -e " 当前状态: go-cqhttp ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
-      fi
-    else
-      echo -e " 当前状态: go-cqhttp ${Red_font_prefix}未安装${Font_color_suffix}"
-    fi
+      echo -e " 当前状态: napcat ${Red_font_prefix}未安装${Font_color_suffix}"
+  fi
+  pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+  if [ -z "$pathName" ]; then
+    echo -e "${Red_font_prefix}当前未登录bot qq"${Font_color_suffix}
+  else
+    echo -e "当前bot qq：${Green_font_prefix}${pathName}"${Font_color_suffix}
   fi
   echo
   read -erp " 请输入数字 [0-10]:" num
@@ -838,28 +845,28 @@ if [[ -e "${WORK_DIR}/go-cqhttp/go-cqhttp" ]]; then
     Install_zhenxun_bot
     ;;
   2)
-    Start_cqhttp
+    Start_napcat
     ;;
   3)
-    Stop_cqhttp
+    Stop_napcat
     ;;
   4)
-    Restart_cqhttp
+    Restart_napcat
     ;;
   5)
     Set_config_bot
     ;;
   6)
-    Set_config_cqhttp
+    Set_config_napcat
     ;;
   7)
-    View_cqhttp_log
+    View_napcat_log
     ;;  
   8)
-    Exit_cqhttp
+    View_napcat_webui_info
     ;;
   9)
-    menu_termux
+    menu_postgresql
     ;;
   10)
     menu_zhenxun
@@ -870,8 +877,8 @@ if [[ -e "${WORK_DIR}/go-cqhttp/go-cqhttp" ]]; then
   esac
 }
 
-menu_termux() {
-  echo && echo -e "  go-cqhttp 一键安装管理脚本修改版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
+menu_postgresql() {
+  echo && echo -e "  zhenxun_bot 一键安装管理脚本修改版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
   -- Sakura | github.com/AkashiCoin --
  ${Green_font_prefix} 0.${Font_color_suffix} 升级脚本
  ————————————
@@ -880,32 +887,29 @@ menu_termux() {
  ${Green_font_prefix} 3.${Font_color_suffix} 停止 postgresql 数据库
  ————————————
  ${Green_font_prefix} 4.${Font_color_suffix} 自动检测 zhenxun_bot 依赖
- ${Green_font_prefix} 5.${Font_color_suffix} 设置 zhenxun gocq 端口
+ ${Green_font_prefix} 5.${Font_color_suffix} 设置 zhenxun napcat 端口
  ${Green_font_prefix} 6.${Font_color_suffix} 修改 dns
  ————————————
  ${Green_font_prefix} 7.${Font_color_suffix} 修改 pip 源
  ${Green_font_prefix} 8.${Font_color_suffix} 修改 apt 源
 ————————————
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 go-cqhttp 菜单
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 napcat 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
-  if [[ -e "${WORK_DIR}/go-cqhttp/go-cqhttp" ]]; then
-    check_pid_cqhttp
+  if [[ -e "/usr/lib/postgresql/14/bin/postgres" ]]; then
+    check_pid_postgres
     if [[ -n "${PID}" ]]; then
-      echo -e " 当前状态: go-cqhttp ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
+      echo -e " 当前状态: postgres ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
     else
-      echo -e " 当前状态: go-cqhttp ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
+      echo -e " 当前状态: postgres ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
     fi
   else
-    if [[ -e "${file}/go-cqhttp/go-cqhttp" ]]; then
-      check_pid_cqhttp
-      if [[ -n "${PID}" ]]; then
-        echo -e " 当前状态: go-cqhttp ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
-      else
-        echo -e " 当前状态: go-cqhttp ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
-      fi
-    else
-      echo -e " 当前状态: go-cqhttp ${Red_font_prefix}未安装${Font_color_suffix}"
-    fi
+      echo -e " 当前状态: postgres ${Red_font_prefix}未安装${Font_color_suffix}"
+  fi
+  pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+  if [ -z "$pathName" ]; then
+    echo -e "${Red_font_prefix}当前未登录bot qq"${Font_color_suffix}
+  else
+    echo -e "当前bot qq：${Green_font_prefix}${pathName}"${Font_color_suffix}
   fi
   echo
   read -erp " 请输入数字 [0-10]:" num
@@ -938,7 +942,7 @@ menu_termux() {
     Set_apt_source
     ;;
   9)
-    menu_cqhttp
+    menu_napcat
     ;;
   10)
     menu_zhenxun
@@ -954,7 +958,7 @@ menu_zhenxun() {
   -- Sakura | github.com/AkashiCoin --
  ${Green_font_prefix} 0.${Font_color_suffix} 升级脚本
  ————————————
- ${Green_font_prefix} 1.${Font_color_suffix} 安装 zhenxun_bot + go-cqhttp
+ ${Green_font_prefix} 1.${Font_color_suffix} 安装 zhenxun_bot + napcat
 ————————————
  ${Green_font_prefix} 2.${Font_color_suffix} 启动 zhenxun_bot
  ${Green_font_prefix} 3.${Font_color_suffix} 停止 zhenxun_bot
@@ -964,9 +968,9 @@ menu_zhenxun() {
  ${Green_font_prefix} 6.${Font_color_suffix} 修改 zhenxun_bot 配置文件
  ${Green_font_prefix} 7.${Font_color_suffix} 查看 zhenxun_bot 日志
 ————————————
- ${Green_font_prefix} 8.${Font_color_suffix} 卸载 zhenxun_bot + go-cqhttp
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
- ${Green_font_prefix}10.${Font_color_suffix} 切换为 go-cqhttp 菜单" && echo
+ ${Green_font_prefix} 8.${Font_color_suffix} 卸载 zhenxun_bot + napcat
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 postgresql 菜单
+ ${Green_font_prefix}10.${Font_color_suffix} 切换为 napcat 菜单" && echo
   if [[ -e "${WORK_DIR}/zhenxun_bot/bot.py" ]]; then
     check_pid_zhenxun
     if [[ -n "${PID}" ]]; then
@@ -975,16 +979,13 @@ menu_zhenxun() {
       echo -e " 当前状态: zhenxun_bot ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
     fi
   else
-    if [[ -e "${file}/zhenxun_bot/bot.py" ]]; then
-      check_pid_zhenxun
-      if [[ -n "${PID}" ]]; then
-        echo -e " 当前状态: zhenxun_bot ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
-      else
-        echo -e " 当前状态: zhenxun_bot ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
-      fi
-    else
       echo -e " 当前状态: zhenxun_bot ${Red_font_prefix}未安装${Font_color_suffix}"
-    fi
+  fi
+  pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+  if [ -z "$pathName" ]; then
+    echo -e "${Red_font_prefix}当前未登录bot qq"${Font_color_suffix}
+  else
+    echo -e "当前bot qq：${Green_font_prefix}${pathName}"${Font_color_suffix}
   fi
   echo
   read -erp " 请输入数字 [0-10]:" num
@@ -1017,10 +1018,10 @@ menu_zhenxun() {
     Uninstall_All
     ;;
   9)
-    menu_termux
+    menu_postgresql
     ;;
   10)
-    menu_cqhttp
+    menu_napcat
     ;;
   *)
     echo "请输入正确数字 [0-10]"
