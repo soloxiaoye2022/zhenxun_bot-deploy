@@ -409,8 +409,8 @@ Set_config_admin() {
       echo -e "${Error} 管理员QQ必须是数字，请重新输入！"
       Set_config_admin
     fi
-    cd ${WORK_DIR}/zhenxun_bot && sed -i "s/SUPERUSERS.*/SUPERUSERS=[\"$admin_qq\"]/g" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
-    cd ${WORK_DIR}/zhenxun_bot && sed -i -e 's/"qq".*/"qq": ["'"$admin_qq"'"]/g' .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
+    cd ${WORK_DIR}/zhenxun_bot && sed -i "s/SUPERUSERS=.*/SUPERUSERS=[\"$admin_qq\"]/g" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
+    cd ${WORK_DIR}/zhenxun_bot && sed -i -e 's/"qq".*/"qq": ["'"$admin_qq"'"],/g' .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
     echo -e "${Info} 设置成功!管理员QQ: [""${Green_font_prefix}"${admin_qq}"${Font_color_suffix}""]"
     
 }
