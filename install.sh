@@ -381,7 +381,13 @@ Install_napcat() {
 Set_config_admin() {
     echo -e "${Info} 请输入管理员QQ账号(也就超级用户账号):[QQ]"
     read -erp "管理员QQ:" admin_qq
-    [[ -z "$admin_qq" ]] && admin_qq=""
+    if [[ -z "$admin_qq" ]]; then
+      echo -e "${Error} 管理员QQ不能为空，请重新输入！"
+      Set_config_admin
+    elif [[ "$admin_qq" =~ ^[0-9]+$ ]]; then
+      echo -e "${Error} 管理员QQ必须是数字，请重新输入！"
+      Set_config_admin
+    fi
     cd ${WORK_DIR}/zhenxun_bot && sed -i "s/SUPERUSERS.*/SUPERUSERS=[\"$admin_qq\"]/g" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
     cd ${WORK_DIR}/zhenxun_bot && sed -i -e 's/"qq".*/"qq": ["'"$admin_qq"'"]/' .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
     echo -e "${Info} 设置成功!管理员QQ: [""${Green_font_prefix}"${admin_qq}"${Font_color_suffix}""]"
@@ -389,25 +395,31 @@ Set_config_admin() {
 }
 
 Set_config_bot() {
-    if [[ -e "${napcat_DIR}/napcat/config/onebot11_$bot_qq.json" ]]; then
-      echo -e "${Info} napcat 配置文件已存在，跳过生成"
-    else
-      cd ${napcat_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
-      echo -e "${Info} 请输入Bot QQ账号:[QQ]"
-      read -erp "Bot QQ:" bot_qq
-      [[ -z "$bot_qq" ]] && bot_qq=""
-      if [ "$bot_qq" = "$admin_qq" ]; then
-        echo -e "${Error} Bot QQ[""${Green_font_prefix}"$bot_qq"${Font_color_suffix}""]不能与管理员QQ账号[""${Green_font_prefix}"$admin_qq"${Font_color_suffix}""]一致"
-        Set_config_bot
-      else
-        cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-        cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-        cd ${napcat_DIR}/napcat/config && sed -i -e 's/"musicSignUrl".*/"musicSignUrl": '"$musicSignUrl"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-        echo -e "${Info} 设置成功!Bot QQ: [""${Green_font_prefix}"${bot_qq}"${Font_color_suffix}""]"
-        Set_Port
-      fi
+    echo -e "${Info} 请输入Bot QQ账号:[QQ]"
+    read -erp "Bot QQ:" bot_qq
+    if [[ -z "$bot_qq" ]]; then
+      echo -e "${Error} Bot QQ不能为空，请重新输入！"
+      Set_config_admin
+    elif [[ "$bot_qq" =~ ^[0-9]+$ ]]; then
+      echo -e "${Error} Bot QQ必须是数字，请重新输入！"
+      Set_config_admin
     fi
-    
+
+    if [ "$bot_qq" = "$admin_qq" ]; then
+      echo -e "${Error} Bot QQ[""${Green_font_prefix}"$bot_qq"${Font_color_suffix}""]不能与管理员QQ账号[""${Green_font_prefix}"$admin_qq"${Font_color_suffix}""]一致"
+      Set_config_bot
+    else
+      if [[ -e "${napcat_DIR}/napcat/config/onebot11_$bot_qq.json" ]]; then
+        echo ""
+      else
+        cd ${napcat_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
+      fi
+      cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+      cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+      cd ${napcat_DIR}/napcat/config && sed -i -e 's/"musicSignUrl".*/"musicSignUrl": '"$musicSignUrl"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+      echo -e "${Info} 设置成功!Bot QQ: [""${Green_font_prefix}"${bot_qq}"${Font_color_suffix}""]"
+      Set_Port
+    fi 
 }
 
 Set_config() { 
