@@ -10,9 +10,9 @@ proot容器相关软件及教程:
 
 ## 系统要求
 
-*debian11
+*debian12+
 
-*Ubuntu20.04
+*Ubuntu22.04+
 
 *其他发行版自行安装python3.8+
 
@@ -35,6 +35,11 @@ bash <(curl -s -L https://mirror.ghproxy.com/raw.githubusercontent.com/soloxiaoy
 ## 更新
 
 ****
+
+**202/9/1**
+
+* [Mrs4s / go-cqhttp](https://github.com/Mrs4s/go-cqhttp)更换为[Napcat](https://github.com/NapNeko/NapCatQQ)
+* 重构部分代码，优化安装体验
 
 **2023/2/11**
 
