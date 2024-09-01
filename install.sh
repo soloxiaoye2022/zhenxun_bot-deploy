@@ -131,7 +131,7 @@ network_test() {
     ghproxy=""
     found=0
     proxy_num=${proxy_num:-9}
-    proxy_arr=("https://github.moeyy.xyz" "https://gh-proxy.com" "https://x.haod.me" "https://mirror.ghproxy.com")
+    proxy_arr=("https://github.moeyy.xyz/" "https://gh-proxy.com/" "https://x.haod.me/" "https://mirror.ghproxy.com/")
     check_url="https://raw.githubusercontent.com/NapNeko/NapCatQQ/main/package.json"
     for proxy in "${proxy_arr[@]}"; do
       status=$(curl -o /dev/null -s -w "%{http_code}" "$proxy/$check_url")
