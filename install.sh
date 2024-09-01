@@ -8,8 +8,6 @@ WORK_DIR="/root"
 TMP_DIR="$(mktemp -d)"
 GOCQ_DIR="/root/go-cqhttp"
 ZX_DIR="/root/zhenxun_bot/"
-python_v="python3.8"
-which python3.9 && python_v="python3.9"
 sh_ver="1.0.4.1"
 ghproxy="https://mirror.ghproxy.com/"
 mirror_url='"https://pypi.org/simple"'
@@ -18,6 +16,18 @@ mix="1024"
 max="49151"
 dns="8.8.8.8"
 
+#检查python
+if which python3.12 > /dev/null;then
+  which python3.12
+elif which python3.11 > /dev/null;then
+  which python3.11
+elif which python3.10 > /dev/null;then
+  which python3.10
+elif which python3.9 > /dev/null;then
+  which python3.9
+elif which python3.8 > /dev/null;then
+  which python3.8
+fi
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Red_background_prefix="\033[41;37m" && Purple_font_prefix="\033[33m" && Font_color_suffix="\033[0m"
 Info="${Green_font_prefix}[信息]${Font_color_suffix}"
 Error="${Red_font_prefix}[错误]${Font_color_suffix}"
@@ -49,7 +59,7 @@ check_sys() {
         echo -e "zhenxun_bot 暂不支持该Linux发行版" && exit 1
     fi
     bit=$(uname -m)
-    
+
 }
 
 check_installed_zhenxun_status() {
@@ -113,7 +123,6 @@ Installation_dependency() {
                 ./configure && \
                 make -j $(cat /proc/cpuinfo |grep "processor"|wc -l) && \
                 make altinstall
-            python_v="python3.9"
         fi
         ${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
         rpm -v --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
@@ -131,14 +140,13 @@ EOF
     elif [[ ${release} == "debian" ]]; then
         apt-get update
         apt-get install -y wget ttf-wqy-zenhei xfonts-intl-chinese wqy* build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
-        if  ! which python3.8 && ! which python3.9;then
+        if  ! which python3.8 && ! which python3.9 && ! which python3.10;then
             wget https://mirrors.huaweicloud.com/python/3.9.10/Python-3.9.10.tgz -O "${TMP_DIR}"/Python-3.9.10.tgz && \
                 tar -zxf "${TMP_DIR}"/Python-3.9.10.tgz -C "${TMP_DIR}"/ &&\
                 cd "${TMP_DIR}"/Python-3.9.10 && \
                 ./configure --with-ensurepip=install && \
                 make -j $(cat /proc/cpuinfo |grep "processor"|wc -l) && \
                 make altinstall
-            python_v="python3.9"
         fi
         apt-get install -y \
             vim \
@@ -165,7 +173,7 @@ EOF
         apt-get install -y software-properties-common ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming
         fc-cache -f -v
         echo -e "\n" | add-apt-repository ppa:deadsnakes/ppa
-        if  ! which python3.8 && ! which python3.9;then
+        if  ! which python3.8 && ! which python3.9 && ! which python3.10;then
             apt-get install -y python3.9-full
             python_v="python3.9"
         fi
@@ -192,10 +200,17 @@ EOF
     elif [[ ${release} == "archlinux" ]]; then
         pacman -Sy python python-pip unzip --noconfirm
     fi
-    which python3.10  && python_v="python3.10"
-    which python3.9  && python_v="python3.9"
-    which python3.8 && python_v="python3.8"
+
+    if which python3.10; then
+      python_v="python3.10"
+    elif which python3.9; then 
+      python_v="python3.9"
+    elif which python3.8; then
+      python_v="python3.8"
+    fi
+    
     [[ ! -e /usr/bin/python3 ]] && ln -s /usr/bin/${python_v} /usr/bin/python3
+     apt install ${python_v}-dev -y
 }
 
 check_arch() {
@@ -343,7 +358,7 @@ Set_config_bot() {
         echo -e "${Info} 请输入Bot QQ密码:[Password]"
         while true; do
             read -erp "Bot Password:" bot_password
-            read -erp "${Info} 请再次输入密码:" again_password
+            read -erp "请再次输入密码:" again_password
             if [ "$again_password" != "$bot_password" ]; then
                 echo -e "${Error} 两次输入的密码不一致，请重新输入!"
             else
@@ -584,8 +599,12 @@ Set_dependency() {
     Set_pip_Mirror
     ${python_v} -m pip install poetry
     poetry env use ${python_v}
-    poetry lock
-    poetry install
+    if ${python_v} >= "3.10"; then
+      poetry add pyyaml=6.0.1
+    else
+      poetry lock
+      poetry install
+    fi
     poetry run playwright install-deps chromium
     poetry run playwright install chromium
 
