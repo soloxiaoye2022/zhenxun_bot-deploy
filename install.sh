@@ -68,7 +68,7 @@ check_installed_zhenxun_status() {
 }
 
 check_installed_napcat_status() {
-  [[ ! -e "${WORK_DIR}/napcat" ]] && echo -e "${Error} napcat 没有安装，请检查 !" && exit 1
+  [[ ! -e "${napcat_DIR}/napcat" ]] && echo -e "${Error} napcat 没有安装，请检查 !" && exit 1
 }
 
 check_pid_zhenxun() {
@@ -117,6 +117,41 @@ Set_ghproxy() {
   [[ -z "${ghproxy_check}" ]] && ghproxy_check='y'
   [[ ${ghproxy_check} == 'n' ]] && ghproxy=""
 }
+
+network_test() {
+    target_proxy=""
+    proxy_num=${proxy_num:-9}
+    proxy_arr=("https://github.moeyy.xyz" "https://mirror.ghproxy.com" "https://gh-proxy.com" "https://x.haod.me")
+    check_url="https://raw.githubusercontent.com/NapNeko/NapCatQQ/main/package.json"
+
+    if [ ! -z "$proxy_num" ] && [ "$proxy_num" -ge 1 ] && [ "$proxy_num" -le ${#proxy_arr[@]} ]; then
+        echo "手动指定代理：${proxy_arr[$proxy_num-1]}"
+        target_proxy="${proxy_arr[$proxy_num-1]}"
+    else
+        if [ "$proxy_num" -ne 0 ]; then
+            echo "proxy 未指定或超出范围，正在检查${parm1}代理可用性..."
+            for proxy in "${proxy_arr[@]}"; do
+                status=$(curl -o /dev/null -s -w "%{http_code}" "$proxy/$check_url")
+                if [ $status -eq 200 ]; then
+                    found=1
+                    target_proxy="$proxy"
+                    echo "将使用代理：$proxy"
+                    break
+                fi
+            done
+
+            if [ $found -eq 0 ]; then
+                echo "无法连接到GitHub，请检查网络。"
+                exit 1
+            fi
+        else
+            echo "代理已关闭，将直接连接GitHub..."
+        fi
+    fi
+    napcat_download_url="${target_proxy:+${target_proxy}/}https://github.com/NapNeko/NapCatQQ/releases/download/$napcat_version/NapCat.Shell.zip"
+}
+
+
 
 Installation_dependency() {
     if [[ ${release} == "centos" ]]; then
@@ -354,10 +389,10 @@ Set_config_admin() {
 }
 
 Set_config_bot() {
-    if [[ -e "${WORK_DIR}/napcat/config/onebot11_$bot_qq.json" ]]; then
+    if [[ -e "${napcat_DIR}/napcat/config/onebot11_$bot_qq.json" ]]; then
       echo -e "${Info} napcat 配置文件已存在，跳过生成"
     else
-      cd ${WORK_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
+      cd ${napcat_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
       echo -e "${Info} 请输入Bot QQ账号:[QQ]"
       read -erp "Bot QQ:" bot_qq
       [[ -z "$bot_qq" ]] && bot_qq=""
@@ -365,9 +400,9 @@ Set_config_bot() {
         echo -e "${Error} Bot QQ[""${Green_font_prefix}"$bot_qq"${Font_color_suffix}""]不能与管理员QQ账号[""${Green_font_prefix}"$admin_qq"${Font_color_suffix}""]一致"
         Set_config_bot
       else
-        cd ${WORK_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-        cd ${WORK_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-        cd ${WORK_DIR}/napcat/config && sed -i -e 's/"musicSignUrl".*/"musicSignUrl": '"$musicSignUrl"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+        cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+        cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/' onebot11.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+        cd ${napcat_DIR}/napcat/config && sed -i -e 's/"musicSignUrl".*/"musicSignUrl": '"$musicSignUrl"'/' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
         echo -e "${Info} 设置成功!Bot QQ: [""${Green_font_prefix}"${bot_qq}"${Font_color_suffix}""]"
         Set_Port
       fi
@@ -387,7 +422,7 @@ echo -e "${Info} 请设置zhenxun_bot napcat通信端口:取值范围[""${Green_
     read -erp "Port:" Port
     [[ -z "${Port}" ]] && Port=""
       if [ "${Port}" -ge ${mix} -a "${Port}" -le ${max} ]; then
-        cd ${WORK_DIR}/napcat/config  && sed -i -e 's/"urls".*/"urls": ['"ws://127.0.0.1:${Port}/onebot/v11/ws/"']/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
+        cd ${napcat_DIR}/napcat/config  && sed -i -e 's/"urls".*/"urls": ['"ws://127.0.0.1:${Port}/onebot/v11/ws/"']/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
     echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${Port}"${Font_color_suffix}""]"
       else 
       echo -e "${Error} 端口设置错误，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
@@ -435,7 +470,7 @@ Start_napcat() {
     check_pid_napcat
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
     [[ -n ${PID} ]] && echo -e "${Error} napcat 正在运行，请检查 !" && exit 1
-    cd ${WORK_DIR}/napcat/logs || exit
+    cd ${napcat_DIR}/napcat/logs || exit
     nohup xvfb-run -a qq --no-sandbox -q ${pathName} >> napcat_$pathName.log 2>&1 &
     echo -e "${Info} napcat 开始运行..."
     sleep 2
@@ -490,13 +525,13 @@ Restart_napcat() {
 View_napcat_log() {
     check_installed_napcat_status
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
-    tail -f -n 100 ${WORK_DIR}/napcat/logs/napcat_${pathName}.log
+    tail -f -n 100 ${napcat_DIR}/napcat/logs/napcat_${pathName}.log
 }
 
 Set_config_napcat() {
     check_installed_napcat_status
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
-    vim ${WORK_DIR}/napcat/config/onebot_${pathName}.yml
+    vim ${napcat_DIR}/napcat/config/onebot_${pathName}.yml
 }
 
 Set_config_zhenxun() {
@@ -590,7 +625,7 @@ fi
 
 View_napcat_webui_info() {
     check_installed_napcat_status
-    cd ${WORK_DIR}/napcat/config || exit
+    cd ${napcat_DIR}/napcat/config || exit
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
     token=$(jq '.token' webui.json | sed 's/\"//g')
     port=$(jq '.port' webui.json | sed 's/\"//g')
@@ -823,7 +858,7 @@ menu_napcat() {
  ${Green_font_prefix} 8.${Font_color_suffix} 查看 webui 信息
  ${Green_font_prefix} 9.${Font_color_suffix} 切换为 postgresql 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
-if [[ -e "${WORK_DIR}/napcat" ]]; then
+if [[ -e "${napcat_DIR}/napcat" ]]; then
     check_pid_napcat
     if [[ -n "${PID}" ]]; then
       echo -e " 当前状态: napcat ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
