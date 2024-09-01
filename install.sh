@@ -62,7 +62,7 @@ check_sys() {
     bit=$(uname -m)
     nonomatch=$(cat ~/.zshrc | grep nonomatch)
     if [[ -z "${nonomatch}" ]];then
-      echo "setopt nonomatch" > /root/.zshrc
+      echo "setopt nonomatch" >> /root/.zshrc
       source ~/.zshrc
     fi
 }
@@ -162,9 +162,9 @@ Installation_dependency() {
         yum -y update
         yum install -y git fontconfig mkfontscale epel-release wget vim zip unzip jq curl xorg-x11-server-Xvfb screen zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make libffi-devel
         if  ! which python3.10; then
-            wget https://mirrors.huaweicloud.com/python/3.10.5/Python-3.10.5.tgz -O "${TMP_DIR}"/Python-3.10.5.tgz && \
-                tar -zxf "${TMP_DIR}"/Python-3.10.5.tgz -C "${TMP_DIR}"/ &&\
-                cd "${TMP_DIR}"/Python-3.10.5 --with-ensurepip=install && \
+            wget https://mirrors.huaweicloud.com/python/3.11.2/Python-3.11.2.tgz -O "${TMP_DIR}"/Python-3.11.2.tgz && \
+                tar -zxf "${TMP_DIR}"/Python-3.11.2.tgz -C "${TMP_DIR}"/ &&\
+                cd "${TMP_DIR}"/Python-3.11.2 --with-ensurepip=install && \
                 ./configure && \
                 make -j $(cat /proc/cpuinfo |grep "processor"|wc -l) && \
                 make altinstall
@@ -186,12 +186,25 @@ EOF
         apt-get update
         apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese wqy* build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
         if  ! which python3.11 && ! which python3.12 && ! which python3.10;then
-            wget https://mirrors.huaweicloud.com/python/3.10.5/Python-3.10.5.tgz -O "${TMP_DIR}"/Python-3.10.5.tgz && \
-                tar -zxf "${TMP_DIR}"/Python-3.10.5.tgz -C "${TMP_DIR}"/ &&\
-                cd "${TMP_DIR}"/Python-3.10.5 && \
-                ./configure --with-ensurepip=install && \
-                make -j $(nproc) && \
-                make altinstall
+            wget ${ghproxy}github.com/openssl/openssl/releases/download/openssl-3.0.7/openssl-3.0.7.tar.gz 
+            tar -zxf openssl-3.0.7.tar.gz && cd openssl-3.0.7
+            ./config -fPIC --prefix=/usr/include/openssl enable-shared
+            make && make install
+            msg="_ssl _ssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
+                    -l:libssl.a -Wl,--exclude-libs,libssl.a \
+                    -l:libcrypto.a -Wl,--exclude-libs,libcrypto.a
+                _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
+                    -l:libcrypto.a -Wl,--exclude-libs,libcrypto.a"
+            wget https://mirrors.huaweicloud.com/python/3.11.2/Python-3.11.2.tgz -O "${TMP_DIR}"/Python-3.11.2.tgz && \
+                tar -zxf "${TMP_DIR}"/Python-3.11.2.tgz -C "${TMP_DIR}"/ &&\
+                cd "${TMP_DIR}"/Python-3.11.2 && \
+                echo $msg >> Modules/Setup && \
+                chmod +x configure && \
+                mkdir /usr/local/python-3.11.2 && \
+                ./configure --prefix=/usr/local/python-3.11.2 --with-zlib=/usr/include/ --with-openssl-rpath=auto  --with-openssl=/usr/include/openssl  OPENSSL_LDFLAGS=-L/usr/include/openssl   OPENSSL_LIBS=-l/usr/include/openssl/ssl OPENSSL_INCLUDES=-I/usr/include/openssl
+ && \
+                make -j $(nproc) && make altinstall
+
         fi
         apt-get install -y \
             vim \
