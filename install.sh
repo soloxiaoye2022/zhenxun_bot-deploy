@@ -488,11 +488,13 @@ Restart_napcat() {
 }
 
 View_napcat_log() {
+    check_installed_napcat_status
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
     tail -f -n 100 ${WORK_DIR}/napcat/logs/napcat_${pathName}.log
 }
 
 Set_config_napcat() {
+    check_installed_napcat_status
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
     vim ${WORK_DIR}/napcat/config/onebot_${pathName}.yml
 }
@@ -587,6 +589,7 @@ fi
 }
 
 View_napcat_webui_info() {
+    check_installed_napcat_status
     cd ${WORK_DIR}/napcat/config || exit
     pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
     token=$(jq '.token' webui.json | sed 's/\"//g')
@@ -594,8 +597,8 @@ View_napcat_webui_info() {
     local_ipv4=$(ip addr show | grep -v docker | grep -v br-.* | grep -v "host lo" | grep 'inet ' | awk '{print $2}' | head -n 1 | cut -d'/' -f1)
     public_ipv4=$(curl 4.ipw.cn)
     public_ipv6=$(curl 6.ipw.cn)
-    echo -e "${Info} 当前bot QQ：${pathName}"
-    echo -e "${Info} 登录密钥（token）：${token}"
+    echo -e "${Info} 当前bot QQ：${Green_font_prefix}${pathName}${Font_color_suffix}"
+    echo -e "${Info} 登录密钥（token）：${Green_font_prefix}${token}${Font_color_suffix}"
     echo -e "${Info} webui地址："
     echo -e "${Info} 内网v4：http://${local_ipv4}:${port}/webui/login.html"
     echo -e "${Info} 公网v4：http://${public_ipv4}:${port}/webui/login.html"
@@ -603,6 +606,7 @@ View_napcat_webui_info() {
     echo "请按任意键返回..."
     read -n 1 -s
     menu_napcat
+  
 }
 
 Set_dependency() {
@@ -826,14 +830,14 @@ if [[ -e "${WORK_DIR}/napcat" ]]; then
     else
       echo -e " 当前状态: napcat ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
     fi
+    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    if [ -z "$pathName" ]; then
+      echo -e "${Red_font_prefix}当前未登录bot qq"${Font_color_suffix}
+    else
+      echo -e "当前bot qq：${Green_font_prefix}${pathName}"${Font_color_suffix}
+    fi
   else
       echo -e " 当前状态: napcat ${Red_font_prefix}未安装${Font_color_suffix}"
-  fi
-  pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
-  if [ -z "$pathName" ]; then
-    echo -e "${Red_font_prefix}当前未登录bot qq"${Font_color_suffix}
-  else
-    echo -e "当前bot qq：${Green_font_prefix}${pathName}"${Font_color_suffix}
   fi
   echo
   read -erp " 请输入数字 [0-10]:" num
@@ -905,12 +909,6 @@ menu_postgresql() {
   else
       echo -e " 当前状态: postgres ${Red_font_prefix}未安装${Font_color_suffix}"
   fi
-  pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
-  if [ -z "$pathName" ]; then
-    echo -e "${Red_font_prefix}当前未登录bot qq"${Font_color_suffix}
-  else
-    echo -e "当前bot qq：${Green_font_prefix}${pathName}"${Font_color_suffix}
-  fi
   echo
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
@@ -980,12 +978,6 @@ menu_zhenxun() {
     fi
   else
       echo -e " 当前状态: zhenxun_bot ${Red_font_prefix}未安装${Font_color_suffix}"
-  fi
-  pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
-  if [ -z "$pathName" ]; then
-    echo -e "${Red_font_prefix}当前未登录bot qq"${Font_color_suffix}
-  else
-    echo -e "当前bot qq：${Green_font_prefix}${pathName}"${Font_color_suffix}
   fi
   echo
   read -erp " 请输入数字 [0-10]:" num
