@@ -130,9 +130,7 @@ Set_ghproxy() {
 }
 
 network_test() {
-    ghproxy=""
     found=0
-    proxy_num=${proxy_num:-9}
     proxy_arr=("https://github.moeyy.xyz/" "https://gh-proxy.com/" "https://x.haod.me/" "https://mirror.ghproxy.com/")
     check_url="https://raw.githubusercontent.com/NapNeko/NapCatQQ/main/package.json"
     for proxy in "${proxy_arr[@]}"; do
@@ -180,7 +178,7 @@ EOF
         su postgres -c "psql -f /tmp/sql.sql"
     elif [[ ${release} == "debian" ]]; then
         apt-get update
-        apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese wqy* build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
+        apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese wqy* build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev make
         if  ! which python3.11 && ! which python3.12 && ! which python3.10;then
             wget ${ghproxy}github.com/openssl/openssl/releases/download/openssl-3.0.7/openssl-3.0.7.tar.gz 
             tar -zxf openssl-3.0.7.tar.gz && cd openssl-3.0.7
@@ -279,7 +277,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
     fi
     
     [[ ! -e /usr/bin/python3 ]] && ln -s /usr/bin/${python_v} /usr/bin/python3
-     apt install ${python_v}-dev -y
+    [[ 'command -v apt-get' ]] && apt install python3*-dev -y
 }
 
 check_arch() {
@@ -504,11 +502,11 @@ Set_config_zhenxun() {
 Start_napcat() {
     check_installed_napcat_status
     check_pid_napcat
-    cd $napcat_DIR/config/
+    cd $napcat_DIR/napcat/config/
     pathName=$(jq '.pathName' onebot11.json | sed 's/\"//g')
     [[ -n ${PID} ]] && echo -e "${Error} napcat 正在运行，请检查 !" && exit 1
     cd ${napcat_DIR}/napcat/logs
-    nohup xvfb-run -a qq --no-sandbox -q ${pathName} >> napcat_$pathName.log 2>&1 &
+    nohup xvfb-run -a qq --no-sandbox -q ${pathName} >> napcat_${pathName}.log 2>&1 &
     echo -e "${Info} napcat 开始运行..."
     sleep 2
 }
