@@ -198,6 +198,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
                 ./configure --prefix=/usr/local/python-3.11.2 --with-zlib=/usr/include/ --with-openssl-rpath=auto  --with-openssl=/usr/include/openssl  OPENSSL_LDFLAGS=-L/usr/include/openssl   OPENSSL_LIBS=-l/usr/include/openssl/ssl OPENSSL_INCLUDES=-I/usr/include/openssl
                 make -j $(nproc)
                 make altinstall
+                ln -s /usr/local/python-3.11.2/bin/python3.11 /usr/bin/python3.11
         fi
         apt-get install -y \
             vim \
@@ -685,12 +686,12 @@ Set_dependency() {
     cd ${WORK_DIR}/zhenxun_bot || exit
     Set_pip_Mirror
     #if [[ ${release} == "debian" ]]; then
-    pip install poetry --break-system-packages
+    pip install poetry || pip install poetry --break-system-packages
     poetry env use ${python_v}
     #if ${python_v} >= "3.10"; then
     #  poetry add pyyaml=6.0.1
     #else
-    poetry lock
+    poetry lock || poetry lock --no-update
     poetry install
     #fi
     poetry run playwright install-deps chromium
@@ -973,7 +974,7 @@ menu_postgresql() {
 ————————————
  ${Green_font_prefix} 9.${Font_color_suffix} 切换为 napcat 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
-  if which psql ]]; then
+  if which psql; then
     check_pid_postgres
     if [[ -n "${PID}" ]]; then
       echo -e " 当前状态: postgres ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
