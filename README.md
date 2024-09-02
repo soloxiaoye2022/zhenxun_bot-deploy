@@ -32,6 +32,10 @@ bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-d
 ```bash
 bash <(curl -s -L https://mirror.ghproxy.com/raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
 ```
+备用脚本：
+```bash
+bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+```
 ## 更新
 
 ****
