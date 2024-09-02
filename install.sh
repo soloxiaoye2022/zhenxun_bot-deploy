@@ -277,7 +277,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
     fi
     
     [[ ! -e /usr/bin/python3 ]] && ln -s /usr/bin/${python_v} /usr/bin/python3
-    [[ 'command -v apt-get' ]] && apt install python3*-dev -y
+    [[ 'command -v apt-get' ]] && apt install python3*-dev python3*-full -y
 }
 
 check_arch() {
@@ -684,12 +684,13 @@ View_napcat_webui_info() {
 Set_dependency() {
     cd ${WORK_DIR}/zhenxun_bot || exit
     Set_pip_Mirror
-    pip install poetry
+    #if [[ ${release} == "debian" ]]; then
+    pip install poetry --break-system-packages
     poetry env use ${python_v}
     #if ${python_v} >= "3.10"; then
     #  poetry add pyyaml=6.0.1
     #else
-    #  poetry lock
+    poetry lock
     poetry install
     #fi
     poetry run playwright install-deps chromium
