@@ -905,7 +905,8 @@ if [[ -e "${napcat_DIR}/napcat" ]]; then
     else
       echo -e " 当前状态: napcat ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
     fi
-    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    cd ${napcat_DIR}/napcat/config
+    pathName=$(jq '.pathName' onebot11.json | sed 's/\"//g')
     if [ -z "$pathName" ]; then
       echo -e "${Red_font_prefix}当前未登录bot qq"${Font_color_suffix}
     else
