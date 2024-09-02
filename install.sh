@@ -230,7 +230,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
         apt-get install -y software-properties-common ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming
         fc-cache -f -v
         echo -e "\n" | add-apt-repository ppa:deadsnakes/ppa
-        if  ! which python3.11 && ! which python3.12 && ! which python3.10;then
+        if  ! which python3.12 && ! which python3.11 && ! which python3.10;then
             apt-get install -y python3.10-full
             python_v="python3.10"
         fi
@@ -973,7 +973,7 @@ menu_postgresql() {
 ————————————
  ${Green_font_prefix} 9.${Font_color_suffix} 切换为 napcat 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
-  if [[ -e "/usr/lib/postgresql/14/bin/postgres" ]]; then
+  if which psql ]]; then
     check_pid_postgres
     if [[ -n "${PID}" ]]; then
       echo -e " 当前状态: postgres ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
