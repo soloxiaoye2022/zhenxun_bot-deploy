@@ -664,7 +664,7 @@ fi
 View_napcat_webui_info() {
     check_installed_napcat_status
     cd ${napcat_DIR}/napcat/config || exit
-    pathName=$(jq '.pathName' onebot.json | sed 's/\"//g')
+    pathName=$(jq '.pathName' napcat.json | sed 's/\"//g')
     token=$(jq '.token' webui.json | sed 's/\"//g')
     port=$(jq '.port' webui.json | sed 's/\"//g')
     local_ipv4=$(ip addr show | grep -v docker | grep -v br-.* | grep -v "host lo" | grep 'inet ' | awk '{print $2}' | head -n 1 | cut -d'/' -f1)
