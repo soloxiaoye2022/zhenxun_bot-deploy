@@ -684,14 +684,14 @@ View_napcat_webui_info() {
 Set_dependency() {
     cd ${WORK_DIR}/zhenxun_bot || exit
     Set_pip_Mirror
-    ${python_v} -m pip install poetry
+    pip install poetry
     poetry env use ${python_v}
-    if ${python_v} >= "3.10"; then
-      poetry add pyyaml=6.0.1
-    else
-      poetry lock
-      poetry install
-    fi
+    #if ${python_v} >= "3.10"; then
+    #  poetry add pyyaml=6.0.1
+    #else
+    #  poetry lock
+    poetry install
+    #fi
     poetry run playwright install-deps chromium
     poetry run playwright install chromium
 
