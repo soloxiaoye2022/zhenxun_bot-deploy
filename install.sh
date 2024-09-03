@@ -168,7 +168,7 @@ Installation_dependency() {
         rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
         yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
         yum install -y postgresql13-server ffmpeg ffmpeg-devel atk at-spi2-atk cups-libs libxkbcommon libXcomposite libXdamage libXrandr mesa-libgbm gtk3
-        /usr/pgsql-13/bin/postgresql-13-setup initdb
+        /usr/psql-13/bin/postgresql-13-setup initdb
         systemctl enable postgresql-13
         systemctl start postgresql-13
         cat > /tmp/sql.sql <<-EOF
@@ -359,7 +359,7 @@ Download_zhenxun_bot() {
  while true; do
     cd "${TMP_DIR}" || exit 1
     echo -e "${Info} 开始下载最新版 zhenxun_bot ..."
-    git clone "${ghproxy}${zhenxun_url}" -b main
+    git clone -b dev "${ghproxy}${zhenxun_url}"
     if [ $? = 0 ] ; then
      break
   else
@@ -367,6 +367,9 @@ Download_zhenxun_bot() {
   fi
   sleep 3
  done
+    echo -e "${Info} 开始下载 zhenxun_bot 插件库 ..."
+    git clone ${ghproxy}https://github.com/zhenxun-org/zhenxun_bot_plugins
+    mv "${TMP_DIR}/zhenxun_bot_plugins/plugins/* ${TMP_DIR}/zhenxun_bot/zhenxun/plugins/
     echo -e "${Info} 开始安装 napcat ..."
     Install_napcat
     cd "${WORK_DIR}" || exit 1
@@ -436,7 +439,6 @@ Set_config_bot() {
       else
         cd ${napcat_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
       fi
-      #cd ${napcat_DIR}/napcat/config && sed -i -e 's/"pathName".*/"pathName": '"$bot_qq"'/g' onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
       cd ${napcat_DIR}/napcat/config && jq --arg key "pathName" --arg value "$bot_qq" '. += {($key): $value}' napcat.json > napcat.json.tmp && mv napcat.json.tmp napcat.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
       cd ${napcat_DIR}/napcat/config && jq ".musicSignUrl = \"$musicSignUrl"\" onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
       cd ${napcat_DIR}/napcat/config && jq '.reverseWs.enable = true' onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
@@ -686,15 +688,12 @@ View_napcat_webui_info() {
 Set_dependency() {
     cd ${WORK_DIR}/zhenxun_bot || exit
     Set_pip_Mirror
-    #if [[ ${release} == "debian" ]]; then
     pip install poetry || pip install poetry --break-system-packages
     poetry env use ${python_v}
-    #if ${python_v} >= "3.10"; then
-    #  poetry add pyyaml=6.0.1
-    #else
     poetry lock || poetry lock --no-update
     poetry install
-    #fi
+    poetry run pip install nonebot-plugin-alconna==0.51.1  arclet-alconna==1.8.23 arclet-alconna-tools==0.7.9 
+    poetry run pip install jieba matplotlib wordcloud
     poetry run playwright install-deps chromium
     poetry run playwright install chromium
 
@@ -786,13 +785,13 @@ Install_postgresql() {
 INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
 if [ "$INODE_NUM" == '2' ];
 then
-      echo -e "${Info} 开始安装pgsql数据库"
+      echo -e "${Info} 开始安装psql数据库"
       apt-get install postgresql postgresql-contrib -y
-      echo -e "${Info} 设置pgsql数据库开机自启"
+      echo -e "${Info} 设置psql数据库开机自启"
       systemctl enable postgresql
       systemctl restart postgresql
 else
-      echo -e "${Info} 开始安装pgsql数据库"
+      echo -e "${Info} 开始安装psql数据库"
       sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
         wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
         apt-get update
@@ -803,39 +802,17 @@ else
  echo -e "${Info} 检测数据库状态 "
   su postgres <<-EOF
      pg_createcluster 13 main --start
-     echo -e "${Info} 检测到pgsql数据库文件权限问题...\n开始修复pgsql数据库"
+     echo -e "${Info} 检测到psql数据库文件权限问题...\n开始修复psql数据库"
      chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
-     echo -e "${Info} 修复完成，启动pgsql数据库"
+     echo -e "${Info} 修复完成，启动psql数据库"
 EOF
 fi
 Start_postgresql
-check_pgsql
+check_psql
 fi
 }
 
-#check_pgsql() {
-#databaseuser="zhenxun"
-#result=$(su postgres << EOF
-#echo -e "SELECT u.usename FROM pg_catalog.pg_user u  where u.usename='${databaseuser}';\n" | psql 
-#EOF)
-#usename=$(echo "$result" | rev | awk -F' ' '{print $2}' | cut -b 1)
-#dbname=$(su postgres << EOF
-#psql -l | grep $databaseuser | wc -l
-#EOF)
-#  if [ "$usename" -eq "0" -a "$dbname" -eq "0" ]; then
-#  su postgres <<-EOF
-#echo -e "CREATE USER zhenxun WITH PASSWORD 'zxpassword';\n CREATE DATABASE zhenxun OWNER zhenxun;\n" | psql
-#EOF
-#   echo -e "${Info} 创建数据库成功。用户名 $databaseuser\n数据库名 $databaseuser\n密码zxpassword"
-# else
-#  echo -e "${Tip} 用户名 ${databaseuser} 或者 数据库 ${databaseuser}已存在"
-#fi
-#
-#echo -e "${Info} pgsql数据库安装完成"
-#
-#}
-
-check_pgsql() {
+check_psql() {
     databaseuser="zhenxun"
     result=$(su postgres << EOF
         echo 'SELECT u.usename FROM pg_catalog.pg_user u WHERE u.usename='"'${databaseuser}';"
@@ -847,22 +824,13 @@ EOF
         psql -l | grep $databaseuser | wc -l
 EOF
     )
-#    if [ "$usename" -eq "0" -a "$dbname" -eq "0" ]; then
-#        su postgres <<-EOF
-#            echo 'CREATE USER zhenxun WITH PASSWORD 'zxpassword';'
-#            echo 'CREATE DATABASE zhenxun OWNER zhenxun;'
-#            psql
-#EOF
 su postgres <<-EOF
 echo -e "CREATE USER zhenxun WITH PASSWORD 'zxpassword';\n CREATE DATABASE zhenxun OWNER zhenxun;\n" | psql
 EOF
         echo -e "${Info} 创建数据库成功。用户名 $databaseuser
 数据库名 $databaseuser
 密码zxpassword"
-#    else
-#        echo -e "${Tip} 用户名 ${databaseuser} 或者 数据库 ${databaseuser}已存在"
-#    fi
-    echo -e "${Info} pgsql数据库安装完成"
+    echo -e "${Info} psql数据库安装完成"
 }
 
 Update_Shell(){
