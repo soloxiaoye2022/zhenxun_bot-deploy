@@ -278,7 +278,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
     fi
     
     [[ ! -e /usr/bin/python3 ]] && ln -s /usr/bin/${python_v} /usr/bin/python3
-    [[ 'command -v apt-get' ]] && apt install python3*-dev python3*-full -y
+    [[ 'command -v apt-get' ]] && apt install ${python_v}-dev || apt install python3-dev -y
 }
 
 check_arch() {
