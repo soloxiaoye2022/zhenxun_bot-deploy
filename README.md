@@ -40,7 +40,7 @@ bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/sol
 
 ****
 
-**2023/2/11**
+**2024/9/1**
 
 * 弃用[Mrs4s / go-cqhttp](https://github.com/Mrs4s/go-cqhttp)，更换为[Napcat](https://github.com/NapNeko/NapCatQQ)，详见[#2471](https://github.com/Mrs4s/go-cqhttp/issues/2471)
 * 重构部分代码，优化安装体验
