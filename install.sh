@@ -369,7 +369,7 @@ Download_zhenxun_bot() {
  done
     echo -e "${Info} 开始下载 zhenxun_bot 插件库 ..."
     git clone ${ghproxy}https://github.com/zhenxun-org/zhenxun_bot_plugins
-    mv "${TMP_DIR}/zhenxun_bot_plugins/plugins/* ${TMP_DIR}/zhenxun_bot/zhenxun/plugins/
+    mv ${TMP_DIR}/zhenxun_bot_plugins/plugins/* ${TMP_DIR}/zhenxun_bot/zhenxun/plugins/
     echo -e "${Info} 开始安装 napcat ..."
     Install_napcat
     cd "${WORK_DIR}" || exit 1
