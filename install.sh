@@ -504,7 +504,7 @@ Start_napcat() {
     check_installed_napcat_status
     check_pid_napcat
     cd $napcat_DIR/napcat/config/
-    pathName=$(jq '.pathName' onebot11.json | sed 's/\"//g')
+    pathName=$(jq '.pathName' napcat.json | sed 's/\"//g')
     [[ -n ${PID} ]] && echo -e "${Error} napcat 正在运行，请检查 !" && exit 1
     cd ${napcat_DIR}/napcat/logs
     nohup xvfb-run -a qq --no-sandbox -q ${pathName} >> napcat_${pathName}.log 2>&1 &
