@@ -422,8 +422,8 @@ update_linuxqq_config() {
 update_napcat() {
     get_napcat_version
     echo -e "${Info} 最新NapCatQQ版本：${napcat_version}"
-    if [ -d "${napcat_dir}/napcat" ]; then
-      current_version=$(jq -r '.version' "${napcat_dir}/napcat/package.json")
+    if [ -d "${napcat_DIR}/napcat" ]; then
+      current_version=$(jq -r '.version' "${napcat_DIR}/napcat/package.json")
       echo "NapCatQQ已安装，版本：v${current_version}"
       target_version=${napcat_version#v}
       IFS='.' read -r i1 i2 i3 <<< "$current_version"
@@ -498,23 +498,23 @@ Download_napcat() {
       exit 1
     fi
     
-    if [ ! -d "${napcat_dir}/napcat" ]; then
-      sudo mkdir "${napcat_dir}/napcat/"
+    if [ ! -d "${napcat_DIR}/napcat" ]; then
+      sudo mkdir "${napcat_DIR}/napcat/"
     fi
 
     echo -e "${Info} 正在移动文件..."
-    sudo cp -r -f NapCat/* "${napcat_dir}/napcat/"
+    sudo cp -r -f NapCat/* "${napcat_DIR}/napcat/"
     if [ $? -ne 0 -a $? -ne 1 ]; then
       echo -e "${Error} 文件移动失败，请以root身份运行。"
       clean
       exit 1
     fi
 
-    sudo chmod -R 777 "${napcat_dir}/napcat/"
+    sudo chmod -R 777 "${napcat_DIR}/napcat/"
     echo -e "${Info} 正在修补文件..."
-    sudo mv -f "${napcat_dir}/index.js" "${napcat_dir}/index.js.bak"
+    sudo mv -f "${napcat_DIR}/index.js" "${napcat_DIR}/index.js.bak"
     output_index_js=$(echo -e "const path = require('path');\nconst CurrentPath = path.dirname(__filename)\nconst hasNapcatParam = process.argv.includes('--no-sandbox');\nif (hasNapcatParam) {\n    (async () => {\n        await import(\\\"file://\\\" + path.join(CurrentPath, './napcat/napcat.mjs'));\n    })();\n} else {\n    require('./launcher.node').load('external_index', module);\n}")
-    sudo bash -c "echo \"$output_index_js\" > \"${napcat_dir}/index.js\""
+    sudo bash -c "echo \"$output_index_js\" > \"${napcat_DIR}/index.js\""
 
     if [ $? -ne 0 ]; then
       echo -e "${Error} index.js文件写入失败，请以root身份运行。"
@@ -1070,7 +1070,7 @@ if [[ -e "${napcat_DIR}/napcat" ]]; then
     Set_config_bot && menu_napcat
     ;;
   6)
-    Set_config_napcat && menu_napcat
+    Set_config_napcat && 
     ;;
   7)
     View_napcat_log 
