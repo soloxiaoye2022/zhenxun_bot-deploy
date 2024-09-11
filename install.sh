@@ -473,7 +473,7 @@ Download_napcat() {
       if [ ! -z "$napcat_version" ]; then
         echo -e "${Info} 最新NapCatQQ版本：${napcat_version}, 开始下载..."
         for (( i=1; i<=3; i++ )); do
-          sudo curl -L "${napcat_download_url}" -o "${default_file}"
+          sudo wget -O "${default_file}" "${ghproxy}${napcat_download_url}"
           if [ $? = 0 ] ; then
             break
           elif [ $i -lt 3 ]; then
@@ -971,7 +971,7 @@ Install_postgresql() {
       sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
       wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
       apt-get update
-      apt-get -y install postgresql-13
+      apt-get -y install libc6==3.34postgresql-13
       if stat "/etc/ssl/private/ssl-cert-snakeoil.key" | grep 0700; then
         echo -e "${Info} 检测数据库状态 "
       else
