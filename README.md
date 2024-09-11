@@ -16,6 +16,8 @@ proot容器相关软件及教程:
 
 *其他发行版自行安装python3.10+
 
+*最低要求 Ubuntu20/Debian11  其他发行版自测
+
 **在termux部署真寻建议使用tmoe脚本安装proot容器，chroot容器或将在下个版本支持。使用其他方式安装的容器自行测试。
 
 tmoe脚本：
