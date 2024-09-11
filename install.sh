@@ -4,10 +4,16 @@ export PATH
 
 update_shell_url="https://mirror.ghproxy.com/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh"
 zhenxun_url="https://github.com/HibiKier/zhenxun_bot.git"
+proxy_arr=("https://github.moeyy.xyz/" "https://gh-proxy.com/" "https://x.haod.me/" "https://mirror.ghproxy.com/")
+check_url="https://raw.githubusercontent.com/NapNeko/NapCatQQ/main/package.json"
+napcat_url="https://github.com/NapNeko/NapCatQQ/releases/download/"
+zhenxun_bot_plugins_url="https://github.com/zhenxun-org/zhenxun_bot_plugins"
+api_url="https://api.github.com/repos/NapNeko/NapCatQQ/releases/latest"
+api_url2="https://nclatest.znin.net/"
 WORK_DIR="/root"
 TMP_DIR="$(mktemp -d)"
 napcat_DIR="/opt/QQ/resources/app/app_launcher"
-ZX_DIR="/root/zhenxun_bot/"
+ZX_DIR="${WORK_DIR}/zhenxun_bot/"
 sh_ver="2.0.0"
 mirror_url='"https://pypi.org/simple"'
 musicSignUrl="http://napcat-sign.wumiao.wang:2052/music_sign"
@@ -41,20 +47,27 @@ check_root(){
 check_sys() {
     if [[ -f /etc/redhat-release ]]; then
         release="centos"
+        format="rpm"
     elif grep -q -E -i "debian" /etc/issue; then
         release="debian" 
+        format="deb"
     elif grep -q -E -i "ubuntu" /etc/issue; then
         release="ubuntu"
+        format="deb"
     elif grep -q -E -i "centos|red hat|redhat" /etc/issue; then
         release="centos"
+        format="rpm"
     elif grep -q -E -i "Arch|Manjaro" /etc/issue; then
         release="archlinux"
     elif grep -q -E -i "debian" /proc/version; then
         release="debian"
+        format="deb"
     elif grep -q -E -i "ubuntu" /proc/version; then
         release="ubuntu"
+        format="deb"
     elif grep -q -E -i "centos|red hat|redhat" /proc/version; then
         release="centos"
+        format="rpm"
     else
         echo -e "zhenxun_bot 暂不支持该Linux发行版" && exit 1
     fi
@@ -92,28 +105,28 @@ check_pid_postgres() {
 }
 
 Set_pip_Mirror() {
-  echo -e "${Info} 请输入要选择的pip下载源，默认使用北外源
-  ${Green_font_prefix} 1.${Font_color_suffix} 清华 
-  ${Green_font_prefix} 2.${Font_color_suffix} 腾讯
-  ${Green_font_prefix} 3.${Font_color_suffix} 阿里
-  ${Green_font_prefix} 4.${Font_color_suffix} 中科大
-  ${Green_font_prefix} 5.${Font_color_suffix} 北外 (默认)
-  ${Green_font_prefix} 6.${Font_color_suffix} 不修改"
-  read -erp "请输入数字 [1-6], 默认为 5:" mirror_num
-  [[ -z "${mirror_num}" ]] && mirror_url='"https://mirrors.bfsu.edu.cn/pypi/web/simple/"' && mirror_num='5'
-  [[ ${mirror_num} == 1 ]] && mirror_url='"https://pypi.tuna.tsinghua.edu.cn/simple/"'
-  [[ ${mirror_num} == 2 ]] && mirror_url='"https://mirrors.cloud.tencent.com/pypi/simple/"'
-  [[ ${mirror_num} == 3 ]] && mirror_url='"http://mirrors.aliyun.com/pypi/simple/"'
-  [[ ${mirror_num} == 4 ]] && mirror_url='"https://pypi.mirrors.ustc.edu.cn/simple/"'
-  [[ ${mirror_num} == 5 ]] && mirror_url='"https://mirrors.bfsu.edu.cn/pypi/web/simple/"'
-  if [ "$mirror_num" -ge 1 -a "$mirror_num" -le 5 ];then
-     sed -i "s|url.*|url = "${mirror_url}"|g" ${WORK_DIR}/zhenxun_bot/pyproject.toml
-     pip_url=$(echo $mirror_url | sed 's/\"//g')
-     pip config set global.index-url "${pip_url}"
-  elif [ "$mirror_num" -gt 6 ]; then
-     echo -e"${Info} 你可能没有输入正确的选项?"
-     Set_pip_Mirror
-  fi
+    echo -e "${Info} 请输入要选择的pip下载源，默认使用北外源
+    ${Green_font_prefix} 1.${Font_color_suffix} 清华 
+    ${Green_font_prefix} 2.${Font_color_suffix} 腾讯
+    ${Green_font_prefix} 3.${Font_color_suffix} 阿里
+    ${Green_font_prefix} 4.${Font_color_suffix} 中科大
+    ${Green_font_prefix} 5.${Font_color_suffix} 北外 (默认)
+    ${Green_font_prefix} 6.${Font_color_suffix} 不修改"
+    read -erp "请输入数字 [1-6], 默认为 5:" mirror_num
+    [[ -z "${mirror_num}" ]] && mirror_url='"https://mirrors.bfsu.edu.cn/pypi/web/simple/"' && mirror_num='5'
+    [[ ${mirror_num} == 1 ]] && mirror_url='"https://pypi.tuna.tsinghua.edu.cn/simple/"'
+    [[ ${mirror_num} == 2 ]] && mirror_url='"https://mirrors.cloud.tencent.com/pypi/simple/"'
+    [[ ${mirror_num} == 3 ]] && mirror_url='"http://mirrors.aliyun.com/pypi/simple/"'
+    [[ ${mirror_num} == 4 ]] && mirror_url='"https://pypi.mirrors.ustc.edu.cn/simple/"'
+    [[ ${mirror_num} == 5 ]] && mirror_url='"https://mirrors.bfsu.edu.cn/pypi/web/simple/"'
+    if [ "$mirror_num" -ge 1 -a "$mirror_num" -le 5 ];then
+      sed -i "s|url.*|url = "${mirror_url}"|g" ${WORK_DIR}/zhenxun_bot/pyproject.toml
+      pip_url=$(echo $mirror_url | sed 's/\"//g')
+      pip config set global.index-url "${pip_url}"
+    elif [ "$mirror_num" -gt 6 ]; then
+      echo -e"${Info} 你可能没有输入正确的选项?"
+      Set_pip_Mirror
+    fi
 }
 
 Set_ghproxy() {
@@ -131,8 +144,6 @@ Set_ghproxy() {
 
 network_test() {
     found=0
-    proxy_arr=("https://github.moeyy.xyz/" "https://gh-proxy.com/" "https://x.haod.me/" "https://mirror.ghproxy.com/")
-    check_url="https://raw.githubusercontent.com/NapNeko/NapCatQQ/main/package.json"
     for proxy in "${proxy_arr[@]}"; do
       status=$(curl -o /dev/null -s -w "%{http_code}" "$proxy/$check_url")
       if [ $status -eq 200 ]; then
@@ -145,7 +156,7 @@ network_test() {
 
     if [ $found -eq 0 ]; then
       echo -e "${Error} 无法连接到GitHub，请检查网络。"
-        exit 1
+      exit 1
     fi
 }
 
@@ -160,7 +171,7 @@ Installation_dependency() {
                 tar -zxf "${TMP_DIR}"/Python-3.11.2.tgz -C "${TMP_DIR}"/ &&\
                 cd "${TMP_DIR}"/Python-3.11.2 --with-ensurepip=install && \
                 ./configure && \
-                make -j $(cat /proc/cpuinfo |grep "processor"|wc -l) && \
+                make -j $(nproc) && \
                 make altinstall
         fi
         ${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
@@ -223,6 +234,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             libgbm1 \
             libgtk-3-0 \
             libasound2 \
+            libasound2t64 \
             python3-pip
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
         Install_postgresql
@@ -258,6 +270,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             libgbm1 \
             libgtk-3-0 \
             libasound2 \
+            libasound2t64 \
             python3-pip
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
         Install_postgresql
@@ -282,196 +295,328 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
 }
 
 check_arch() {
-  get_arch=$(arch)
-  if [[ ${get_arch} == "x86_64" ]]; then 
-    arch="amd64"
-  elif [[ ${get_arch} == "aarch64" ]]; then
-    arch="arm64"
-  elif [[ ${get_arch} == "v8l" ]]; then
-    arch="arm64"
-  else
-    echo -e "${Error} napcat 不支持该内核版本(${get_arch})..." && exit 1
-  fi
+    get_arch=$(arch)
+    if [[ ${get_arch} == "x86_64" ]]; then 
+      arch="amd64"
+    elif [[ ${get_arch} == "aarch64" ]]; then
+      arch="arm64"
+    elif [[ ${get_arch} == "v8l" ]]; then
+      arch="arm64"
+    else
+      echo -e "${Error} napcat 不支持该内核版本(${get_arch})..." && exit 1
+    fi
 }
 
 check_module() {
-check_pid_zhenxun
-log="/root/zhenxun_bot/zhenxun_bot.log"
-dir="/root/zhenxun_bot"
-echo -e "${Info} 自动检测真寻确实依赖并自动安装"
-if [[ -e "${log}" ]]; then
-[[ ! -z ${PID} ]] && kill -9 "${PID}"
-cd ${dir} || exit
-nohup poetry run ${python_v} bot.py > zhenxun_bot.log 2>&1 & 
-echo -e "${Info} 正在检测 zhenxun_bot 缺失依赖(需要约1分钟)"
-sleep 60
-[[ ! -z ${PID} ]] && kill -9 "${PID}"
-cat ${log} | grep "No module named" | awk -F "'" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g' | sed 's/ /\n/' > /root/zhenxun_bot/requests.txt
-Install_module
-else
-echo -e "${Error} log文件不存在,即将自动启动 zhenxun_bot 并生成log文件"
-cd ${dir} || exit
-nohup poetry run ${python_v} bot.py > zhenxun_bot.log 2>&1 & 
-echo -e "${Info} log文件已生成"
-sleep 5
-check_module
-fi
+    check_pid_zhenxun
+    log="/root/zhenxun_bot/zhenxun_bot.log"
+    dir="/root/zhenxun_bot"
+    echo -e "${Info} 自动检测真寻确实依赖并自动安装"
+    if [[ -e "${log}" ]]; then
+      [[ ! -z ${PID} ]] && kill -9 "${PID}"
+      cd ${dir} || exit
+      nohup poetry run ${python_v} bot.py > zhenxun_bot.log 2>&1 & 
+      echo -e "${Info} 正在检测 zhenxun_bot 缺失依赖(需要约1分钟)"
+      sleep 60
+      [[ ! -z ${PID} ]] && kill -9 "${PID}"
+      cat ${log} | grep "No module named" | awk -F "'" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g' | sed 's/ /\n/' > /root/zhenxun_bot/requests.txt
+      Install_module
+    else
+      echo -e "${Error} log文件不存在,即将自动启动 zhenxun_bot 并生成log文件"
+      cd ${dir} || exit
+      nohup poetry run ${python_v} bot.py > zhenxun_bot.log 2>&1 & 
+      echo -e "${Info} log文件已生成"
+      sleep 5
+      check_module
+    fi
 
 }
 
 Install_module() {
-module=$(sort -u /root/zhenxun_bot/requests.txt | uniq | sed '/^enchant/d')
-echo "${module}" > /root/zhenxun_bot/requests.txt
-if [[ ! -z "${module}" ]]; then
-cd ${dir} || exit
-echo -e "${Info} 本次检测到以下版本依赖需要安装,如果安装失败请手动进入虚拟环境执行poetry install"
-sleep 1
-poetry run pip install "$module" -i "${pip_url}"
-echo -e "${Info} 本次依赖安装结束"
-check_module
-else
-echo -e "${Info} 没有依赖需要安装"
-fi
+    module=$(sort -u /root/zhenxun_bot/requests.txt | uniq | sed '/^enchant/d')
+    echo "${module}" > /root/zhenxun_bot/requests.txt
+    if [[ ! -z "${module}" ]]; then
+      cd ${dir} || exit
+      echo -e "${Info} 本次检测到以下版本依赖需要安装,如果安装失败请手动进入虚拟环境执行poetry install"
+      sleep 1
+      poetry run pip install "$module" -i "${pip_url}"
+      echo -e "${Info} 本次依赖安装结束"
+      check_module
+    else
+      echo -e "${Info} 没有依赖需要安装"
+    fi
 }
 
 Set_dns() {
-check_sys
-local_dns=$(cat /etc/resolv.conf | grep "nameserver" | head -n 1 | awk '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
- if [[ $local_dns == $dns ]];then
-     echo -e "${Info} 你的dns已经是 ${local_dns}"
- else
-     echo -e "${Info} 检测到本机dns [${local_dns}] 不是谷歌dns,是否修改 dns ?(大陆地区不修改可能会有各种蜜汁网络问题)"
-     read -erp "请选择 [y/n], 默认为 y:" dns_check 
-       [[ -z "${dns_check}" ]] && dns_check='y'
-       [[ ${dns_check} == 'n' ]] && dns=""
-       if [ "${dns_check}" = 'y' ];then
-         sed -i "s|$local_dns|$dns|g" /etc/resolv.conf
-         sed -i '$a DNS=8.8.8.8' /etc/systemd/resolved.conf
-         echo -e "${Info} 已修改dns为 ${dns}"
-       else
-         echo -e "${Info} 你选择的是 'n' ,已跳过修改dns"
-       fi
- fi
+    check_sys
+    local_dns=$(cat /etc/resolv.conf | grep "nameserver" | head -n 1 | awk '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
+    if [[ $local_dns == $dns ]];then
+      echo -e "${Info} 你的dns已经是 ${local_dns}"
+    else
+      echo -e "${Info} 检测到本机dns [${local_dns}] 不是谷歌dns,是否修改 dns ?(大陆地区不修改可能会有各种蜜汁网络问题)"
+      read -erp "请选择 [y/n], 默认为 y:" dns_check 
+      [[ -z "${dns_check}" ]] && dns_check='y'
+      [[ ${dns_check} == 'n' ]] && dns=""
+      if [ "${dns_check}" = 'y' ];then
+        sed -i "s|$local_dns|$dns|g" /etc/resolv.conf
+        sed -i '$a DNS=8.8.8.8' /etc/systemd/resolved.conf
+        echo -e "${Info} 已修改dns为 ${dns}"
+      else
+        echo -e "${Info} 你选择的是 'n' ,已跳过修改dns"
+      fi
+    fi
 }
 
 Download_zhenxun_bot() {
     check_arch
- while true; do
-    cd "${TMP_DIR}" || exit 1
     echo -e "${Info} 开始下载最新版 zhenxun_bot ..."
-    git clone -b dev "${ghproxy}${zhenxun_url}"
-    if [ $? = 0 ] ; then
-     break
-  else
-     echo -e "${Error} zhenxun_bot下载失败！3秒后重试下载..."
-  fi
-  sleep 3
- done
-    echo -e "${Info} 开始下载 zhenxun_bot 插件库 ..."
-    git clone ${ghproxy}https://github.com/zhenxun-org/zhenxun_bot_plugins
-    mv ${TMP_DIR}/zhenxun_bot_plugins/plugins/* ${TMP_DIR}/zhenxun_bot/zhenxun/plugins/
-    echo -e "${Info} 开始安装 napcat ..."
-    Install_napcat
-    cd "${WORK_DIR}" || exit 1
+    cd "${TMP_DIR}" || exit 1
+    for (( i=1; i<=3; i++ )); do
+      git clone -b dev "${ghproxy}${zhenxun_url}"
+      if [ $? = 0 ] ; then
+        echo -e "${Info} 开始下载 zhenxun_bot 插件库 ..."
+        for (( i=1; i<=3; i++ )); do
+          git clone ${ghproxy}${zhenxun_bot_plugins_url}
+          if [ $? = 0 ] ; then
+            break
+          elif [ $i -lt 3 ]; then
+            echo -e "${Info} 第${i}次尝试失败，正在重试..."
+          else
+            echo -e "${Error} 无法下载 zhenxun_bot 插件库，请安装结束后自行安装\n插件库地址：${ghproxy}${zhenxun_bot_plugins_url}。"
+          fi
+        done
+        break
+      elif [ $i -lt 3 ]; then
+        echo -e "${Info} 第${i}次尝试失败，正在重试..."
+      fi
+    done
+
     mv "${TMP_DIR}/zhenxun_bot" ./
-    mkdir -p "napcat"
-    tar -zxf "${TMP_DIR}/napcat.tar.gz" -C ./napcat/
+    mv ${TMP_DIR}/zhenxun_bot_plugins/plugins/* ${ZX_DIR}/zhenxun/plugins/
     echo -e "${Info} 开始下载抽卡相关资源..."
     if [[ -e "${WORK_DIR}/zhenxun_bot/draw_card" ]]; then
-        echo -e "${Info} 抽卡资源文件已存在，跳过下载"
+      echo -e "${Info} 抽卡资源文件已存在，跳过下载"
     else
-        SOURCE_URL=https://pan.yropo.top/source/zhenxun/
-        wget ${SOURCE_URL}data_draw_card.tar.gz -O ~/.cache/data_draw_card.tar.gz \
-            && wget ${SOURCE_URL}img_draw_card.tar.gz -O ~/.cache/img_draw_card.tar.gz \
-            && tar -zxf ~/.cache/data_draw_card.tar.gz -C ${WORK_DIR}/zhenxun_bot/ \
-            && tar -zxf ~/.cache/img_draw_card.tar.gz -C ${WORK_DIR}/zhenxun_bot/ \
-            && rm -rf ~/.cache/*.tar.gz
-   fi
+      SOURCE_URL=https://pan.yropo.top/source/zhenxun/
+      wget ${SOURCE_URL}data_draw_card.tar.gz -O ~/.cache/data_draw_card.tar.gz \
+        && wget ${SOURCE_URL}img_draw_card.tar.gz -O ~/.cache/img_draw_card.tar.gz \
+        && tar -zxf ~/.cache/data_draw_card.tar.gz -C ${WORK_DIR}/zhenxun_bot/ \
+        && tar -zxf ~/.cache/img_draw_card.tar.gz -C ${WORK_DIR}/zhenxun_bot/ \
+        && rm -rf ~/.cache/*.tar.gz
+    fi
 }   
 
-Install_napcat() {
-  while true; do
-    curl -o napcat.sh https://nclatest.znin.net/NapNeko/NapCat-Installer/main/script/install.sh && echo -e "n\n" | sudo bash napcat.sh
-    if [ $? = 0 ] ; then
-      mkdir ${napcat_DIR}/napcat/logs/
-      break
-    else
-      echo -e "${Error} napcat 下载失败！3秒后重试下载..."
+update_linuxqq_config() {
+    echo -e "${Info} 正在更新QQ配置..."
+    confs=$(sudo find /home -name "config.json" -path "*/.config/QQ/versions/*" 2>/dev/null)
+    if [ -f /root/.config/QQ/versions/config.json ]; then
+      confs="/root/.config/QQ/versions/config.json $confs"
     fi
-    sleep 3
-  done
+    for conf in $confs; do
+      echo -e "${Info}  正在修改 $conf..."
+      sudo jq --arg targetVer "$package_targetVer" --arg buildId "$target_build" \
+      '.baseVersion = $targetVer | .curVersion = $targetVer | .buildId = $buildId' "$conf" > "$conf.tmp" && \
+      sudo mv "$conf.tmp" "$conf" || { echo -e "${Error} QQ配置更新失败！"; exit 1; }
+    done
+}
+
+update_napcat() {
+    get_napcat_version
+    echo -e "${Info} 最新NapCatQQ版本：${napcat_version}"
+    if [ -d "${napcat_dir}/napcat" ]; then
+      current_version=$(jq -r '.version' "${napcat_dir}/napcat/package.json")
+      echo "NapCatQQ已安装，版本：v${current_version}"
+      target_version=${napcat_version#v}
+      IFS='.' read -r i1 i2 i3 <<< "$current_version"
+      IFS='.' read -r t1 t2 t3 <<< "$target_version"
+      if (( i1 < t1 || (i1 == t1 && i2 < t2) || (i1 == t1 && i2 == t2 && i3 < t3) )); then
+        Install_napcat
+      else
+        echo -e "${Info} 已安装最新版本，无需更新。"
+      fi
+    fi
+}
+
+Install_linuxqq() {
+    check_arch
+    check_sys
+    echo -e "${Info} 开始安装LinuxQQ..."
+    for (( i=1; i<=3; i++ )); do
+      qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/0724892e/linuxqq_3.2.12-27597_${arch}.${format}"
+      sudo curl -L "${qq_download_url}" -o QQ.${format}
+      sudo apt install -f -y ./QQ.${format}
+      if [ $? = 0 ] ; then
+        break
+      elif [ $i -lt 3 ]; then
+        echo -e "${Info} 第${i}次尝试失败，正在重试..."
+      else
+        echo -e "${Error} 安装NapCatQQ失败，请检查错误。" && exit 1
+      fi
+    done
+    update_linuxqq_config
+}
+
+get_napcat_version() {
+    default_file="NapCat.Shell.zip"
+    json_data=$(curl -s "$api_url") || json_data=$(curl "$api_url2")
+    napcat_version=$(jq -r '.tag_name' <<< "$json_data")
+    napcat_download_url=$(jq -r '.assets[] | select(.name == "NapCat.Shell.zip") | .browser_download_url'  <<< "$json_data")
 
 }
 
-Set_config_admin() {
-    echo -e "${Info} 请输入管理员QQ账号(也就超级用户账号):[QQ]"
-    read -erp "管理员QQ:" admin_qq
-    if [[ -z "$admin_qq" ]]; then
-      echo -e "${Error} 管理员QQ不能为空，请重新输入！"
-      Set_config_admin
-    elif [[ ! "$admin_qq" =~ ^[0-9]+$ ]]; then
-      echo -e "${Error} 管理员QQ必须是数字，请重新输入！"
-      Set_config_admin
+Download_napcat() {
+    echo -e "${Info} 尝试获取最新NapCatQQ版本..."
+    get_napcat_version
+    cd "${TMP_DIR}" || exit 1
+    for (( i=1; i<=3; i++ )); do
+      if [ ! -z "$napcat_version" ]; then
+        echo -e "${Info} 最新NapCatQQ版本：${napcat_version}, 开始下载..."
+        for (( i=1; i<=3; i++ )); do
+          sudo curl -L "${napcat_download_url}" -o "${default_file}"
+          if [ $? = 0 ] ; then
+            break
+          elif [ $i -lt 3 ]; then
+            echo -e "${Info} 第${i}次尝试失败，正在重试..."
+          else
+            echo -e "${Error} 下载NapCatQQ失败，请检查错误。" && exit 1
+          fi
+        done
+        break 
+      elif [ $i -lt 3 ]; then
+        echo -e "${Info} 第${i}次尝试失败，正在重试..."
+      else
+        echo -e "${Error} 无法获取NapCatQQ版本，请检查错误。" && exit 1
+      fi
+    done
+
+    echo -e "${Info} 正在解压 ${default_file}..."
+    unzip -q -o -d NapCat NapCat.Shell.zip
+    if [ $? -ne 0 ]; then
+      echo -e "${Error} 文件解压失败，请检查错误。"
+      clean
+      exit 1
     fi
-    cd ${WORK_DIR}/zhenxun_bot && sed -i "s/SUPERUSERS=.*/SUPERUSERS=[\"$admin_qq\"]/g" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
-    cd ${WORK_DIR}/zhenxun_bot && sed -i -e 's/"qq".*/"qq": ["'"$admin_qq"'"],/g' .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
+    
+    if [ ! -d "${napcat_dir}/napcat" ]; then
+      sudo mkdir "${napcat_dir}/napcat/"
+    fi
+
+    echo -e "${Info} 正在移动文件..."
+    sudo cp -r -f NapCat/* "${napcat_dir}/napcat/"
+    if [ $? -ne 0 -a $? -ne 1 ]; then
+      echo -e "${Error} 文件移动失败，请以root身份运行。"
+      clean
+      exit 1
+    fi
+
+    sudo chmod -R 777 "${napcat_dir}/napcat/"
+    echo -e "${Info} 正在修补文件..."
+    sudo mv -f "${napcat_dir}/index.js" "${napcat_dir}/index.js.bak"
+    output_index_js=$(echo -e "const path = require('path');\nconst CurrentPath = path.dirname(__filename)\nconst hasNapcatParam = process.argv.includes('--no-sandbox');\nif (hasNapcatParam) {\n    (async () => {\n        await import(\\\"file://\\\" + path.join(CurrentPath, './napcat/napcat.mjs'));\n    })();\n} else {\n    require('./launcher.node').load('external_index', module);\n}")
+    sudo bash -c "echo \"$output_index_js\" > \"${napcat_dir}/index.js\""
+
+    if [ $? -ne 0 ]; then
+      echo -e "${Error} index.js文件写入失败，请以root身份运行。"
+      clean
+      exit 1
+    fi
+    clean
+}
+
+Install_napcat() {
+    update_napcat
+    Install_linuxqq
+    Download_napcat
+     
+}
+
+clean() {
+    rm -rf ${TMP_DIR}
+    if [ $? -ne 0 ]; then
+      echo -e "${Error} 临时文件删除失败，请手动删除 ${TMP_DIR}。"
+    fi
+}
+
+
+Set_config_admin() {
+    while true; do
+      echo -e "${Info} 请输入管理员QQ账号(也就超级用户账号):[QQ]"
+      read -erp "管理员QQ:" admin_qq
+      if [[ -z "$admin_qq" ]]; then
+        echo -e "${Error} 管理员QQ不能为空，请重新输入！"
+      elif [[ ! "$admin_qq" =~ ^[0-9]+$ ]]; then
+        echo -e "${Error} 管理员QQ必须是数字，请重新输入！"
+      else
+        break
+      fi
+    done
+    cd ${WORK_DIR}/zhenxun_bot
+    sed -i "s/SUPERUSERS=.*/SUPERUSERS=[\"$admin_qq\"]/g" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
+    sed -i -e 's/"qq".*/"qq": ["'"$admin_qq"'"],/g' .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
     echo -e "${Info} 设置成功!管理员QQ: [""${Green_font_prefix}"${admin_qq}"${Font_color_suffix}""]"
     
 }
 
 Set_config_bot() {
-    echo -e "${Info} 请输入Bot QQ账号:[QQ]"
-    read -erp "Bot QQ:" bot_qq
-    if [[ -z "$bot_qq" ]]; then
-      echo -e "${Error} Bot QQ不能为空，请重新输入！"
-      Set_config_admin
-    elif [[ ! "$bot_qq" =~ ^[0-9]+$ ]]; then
-      echo -e "${Error} Bot QQ必须是数字，请重新输入！"
-      Set_config_admin
-    fi
-
-    if [ "$bot_qq" = "$admin_qq" ]; then
-      echo -e "${Error} Bot QQ[""${Green_font_prefix}"$bot_qq"${Font_color_suffix}""]不能与管理员QQ账号[""${Green_font_prefix}"$admin_qq"${Font_color_suffix}""]一致"
-      Set_config_bot
-    else
-      if [[ -e "${napcat_DIR}/napcat/config/onebot11_$bot_qq.json" ]]; then
-        echo ""
+    while true; do
+      echo -e "${Info} 请输入Bot QQ账号:[QQ]"
+      read -erp "Bot QQ:" bot_qq
+      if [[ -z "$bot_qq" ]]; then
+        echo -e "${Error} Bot QQ不能为空，请重新输入！"
+      elif [[ ! "$bot_qq" =~ ^[0-9]+$ ]]; then
+        echo -e "${Error} Bot QQ必须是数字，请重新输入！"
+      elif [ "$bot_qq" = "$admin_qq" ]; then
+        echo -e "${Error} Bot QQ[""${Green_font_prefix}"$bot_qq"${Font_color_suffix}""]不能与管理员QQ账号[""${Green_font_prefix}"$admin_qq"${Font_color_suffix}""]一致"
       else
-        cd ${napcat_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
+        break
       fi
-      cd ${napcat_DIR}/napcat/config && jq --arg key "pathName" --arg value "$bot_qq" '. += {($key): $value}' napcat.json > napcat.json.tmp && mv napcat.json.tmp napcat.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-      cd ${napcat_DIR}/napcat/config && jq ".musicSignUrl = \"$musicSignUrl"\" onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-      cd ${napcat_DIR}/napcat/config && jq '.reverseWs.enable = true' onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
-      echo -e "${Info} 设置成功!Bot QQ: [""${Green_font_prefix}"${bot_qq}"${Font_color_suffix}""]"
-      Set_Port
-    fi 
+    done
+
+    if [[ ! -e "${napcat_DIR}/napcat/config/onebot11_$bot_qq.json" ]]; then
+      cd ${napcat_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
+    fi
+    cd ${napcat_DIR}/napcat/config && \
+    jq --arg key "pathName" --arg value "$bot_qq" '. += {($key): $value}' napcat.json > napcat.json.tmp && mv napcat.json.tmp napcat.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && \
+    jq ".musicSignUrl = \"$musicSignUrl"\" onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && \
+    jq '.reverseWs.enable = true' onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+    echo -e "${Info} 设置成功!Bot QQ: [""${Green_font_prefix}"${bot_qq}"${Font_color_suffix}""]"
+    
 }
 
 Set_config() { 
     Set_config_admin
     Set_config_bot
+    Set_Port
+    Set_postgresql_bind
+    
+}
+
+Set_Port() {
+    while true; do
+      echo -e "${Info} 请设置zhenxun_bot napcat通信端口:取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
+      read -erp "Port:" Port
+      [[ -z "${Port}" ]] && Port=""
+        if [ "${Port}" -ge ${mix} -a "${Port}" -le ${max} ]; then
+          cd ${napcat_DIR}/napcat/config  && sed -i -e 's/"urls":.*/"urls": ["'"ws:\/\/127.0.0.1:$Port\/onebot\/v11\/ws\/"'"]/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
+          cd ${WORK_DIR}/zhenxun_bot && sed -i -e "s/PORT.*/PORT = ${Port}/" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
+          echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${Port}"${Font_color_suffix}""]"
+        else 
+          echo -e "${Error} 端口设置错误，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
+        fi  
+    done   
+}
+
+Set_postgresql_bind() {
     echo -e "${Info} 开始设置 PostgreSQL 连接语句..."
     cd ${WORK_DIR}/zhenxun_bot && sed -i 's|DB_URL.*|DB_URL = "postgres://zhenxun:zxpassword@localhost:5432/zhenxun"|g' .env.dev
 }
 
-Set_Port() {
-echo -e "${Info} 请设置zhenxun_bot napcat通信端口:取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
-    read -erp "Port:" Port
-    [[ -z "${Port}" ]] && Port=""
-      if [ "${Port}" -ge ${mix} -a "${Port}" -le ${max} ]; then
-        cd ${napcat_DIR}/napcat/config  && sed -i -e 's/"urls":.*/"urls": ["'"ws:\/\/127.0.0.1:$Port\/onebot\/v11\/ws\/"'"]/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
-        cd ${WORK_DIR}/zhenxun_bot && sed -i -e "s/PORT.*/PORT = ${Port}/" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
-        echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${Port}"${Font_color_suffix}""]"
-      else 
-        echo -e "${Error} 端口设置错误，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
-        Set_Port
-     fi     
-}
 Restart_zx_napcat() {
-     Set_Port
-     Restart_zhenxun_bot
-     Restart_napcat
+    Set_Port
+    Restart_zhenxun_bot
+    Restart_napcat
 }
+
 Start_zhenxun_bot() {
     check_installed_zhenxun_status
     check_pid_zhenxun
@@ -491,8 +636,8 @@ Stop_zhenxun_bot() {
 }
 
 Restart_zhenxun_bot() {
-   Stop_zhenxun_bot
-   Start_zhenxun_bot
+    Stop_zhenxun_bot
+    Start_zhenxun_bot
 }
 
 View_zhenxun_log() {
@@ -516,36 +661,36 @@ Start_napcat() {
 }
 
 Start_postgresql() {
-INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
-if [ "$INODE_NUM" == '2' ]; then
-systemctl start postgresql
-else
-su postgres <<-EOF
-     pg_createcluster 13 main --start
-     chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
-     /etc/init.d/postgresql start
+    INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
+    if [ "$INODE_NUM" == '2' ]; then
+      systemctl start postgresql
+    else
+      su postgres <<-EOF
+        pg_createcluster 13 main --start
+        chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
+        /etc/init.d/postgresql start
 EOF
 
-fi
-echo -e "${Info} postgresql数据库已重启"
+    fi
+    echo -e "${Info} postgresql数据库已重启"
 }
 
 Stop_postgresql() {
-INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
-if [ "$INODE_NUM" == '2' ]; then
-systemctl stop postgresql
-else
-su postgres <<-EOF
-     /etc/init.d/postgresql stop
+    INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
+    if [ "$INODE_NUM" == '2' ]; then
+      systemctl stop postgresql
+    else
+      su postgres <<-EOF
+        /etc/init.d/postgresql stop
 EOF
 
-fi
-echo -e "${Info} postgresql数据库已停止"
+    fi
+    echo -e "${Info} postgresql数据库已停止"
 }
 
 Restart_postgresql() {
-Stop_postgresql
-Start_postgresql
+    Stop_postgresql
+    Start_postgresql
 }
 
 Stop_napcat() {
@@ -580,88 +725,87 @@ Set_config_zhenxun() {
 }
 
 Set_apt_source() {
-echo -e "${Info} 请选择apt源修改方式
-  ${Green_font_prefix} 1.${Font_color_suffix} apt源列表
-  ${Green_font_prefix} 2.${Font_color_suffix} 手动输入"
-  read -erp "请输入数字 [1-2], 默认为 1:" apt_source
-   if [[ -z "${apt_source}" ]]; then
-     select_apt_source
-   elif [[ "${apt_source}" = "1" ]]; then
-     select_apt_source
-   elif [[ ${apt_source} = "2" ]]; then
-     echo -e "${Info} 在写了在写了..."
-   fi
+    echo -e "${Info} 请选择apt源修改方式
+    ${Green_font_prefix} 1.${Font_color_suffix} apt源列表
+    ${Green_font_prefix} 2.${Font_color_suffix} 手动输入"
+    read -erp "请输入数字 [1-2], 默认为 1:" apt_source
+    if [[ -z "${apt_source}" ]]; then
+      select_apt_source
+    elif [[ "${apt_source}" = "1" ]]; then
+      select_apt_source
+    elif [[ ${apt_source} = "2" ]]; then
+      echo -e "${Info} 在写了在写了..."
+    fi
 
 }
 
 select_apt_source() {
-echo -e "${Info} 请输入要选择的apt源,默认为北外源
-  ${Green_font_prefix} 1.${Font_color_suffix} 北外 (默认)
-  ${Green_font_prefix} 2.${Font_color_suffix} 清华
-  ${Green_font_prefix} 3.${Font_color_suffix} 阿里
-  ${Green_font_prefix} 4.${Font_color_suffix} 华为
-  ${Green_font_prefix} 5.${Font_color_suffix} 中科大
-  ${Green_font_prefix} 6.${Font_color_suffix} 163 (广东电信：适合电信用户)
-  ${Green_font_prefix} 7.${Font_color_suffix} 老子就不改你能咋滴"
-  read -erp "请输入数字 [1-7], 默认为 1:" select_source
-  if [[ -z "${select_source}" ]]; then
-    apt_source_bfsu
-  elif [[ ${select_source} == 1 ]]; then
-    apt_source_bfsu
-  elif [[ ${select_source} == 2 ]]; then
-    apt_source_tsinghua
-  elif [[ ${select_source} == 3 ]]; then
-    apt_source_ali
-  elif [[ ${select_source} == 4 ]]; then
-    apt_source_huawei
-  elif [[ ${select_source} == 5 ]]; then
-    apt_source_ustc
-  elif [[ ${select_source} == 6 ]]; then
-    apt_source_163
-  fi
+    echo -e "${Info} 请输入要选择的apt源,默认为北外源
+    ${Green_font_prefix} 1.${Font_color_suffix} 北外 (默认)
+    ${Green_font_prefix} 2.${Font_color_suffix} 清华
+    ${Green_font_prefix} 3.${Font_color_suffix} 阿里
+    ${Green_font_prefix} 4.${Font_color_suffix} 华为
+    ${Green_font_prefix} 5.${Font_color_suffix} 中科大
+    ${Green_font_prefix} 6.${Font_color_suffix} 163 (广东电信：适合电信用户)
+    ${Green_font_prefix} 7.${Font_color_suffix} 老子就不改你能咋滴"
+    read -erp "请输入数字 [1-7], 默认为 1:" select_source
+    if [[ -z "${select_source}" ]]; then
+      apt_source_bfsu
+    elif [[ ${select_source} == 1 ]]; then
+      apt_source_bfsu
+    elif [[ ${select_source} == 2 ]]; then
+      apt_source_tsinghua
+    elif [[ ${select_source} == 3 ]]; then
+      apt_source_ali
+    elif [[ ${select_source} == 4 ]]; then
+      apt_source_huawei
+    elif [[ ${select_source} == 5 ]]; then
+      apt_source_ustc
+    elif [[ ${select_source} == 6 ]]; then
+      apt_source_163
+    fi
 
 }
 
 apt_source_bfsu() {
- sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.bfsu.edu.cn/@g" /etc/apt/sources.list && apt update
+    sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.bfsu.edu.cn/@g" /etc/apt/sources.list && apt update
 }
 
 apt_source_tsinghua() {
- sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.tuna.tsinghua.edu.cn/@g" /etc/apt/sources.list && apt update
+    sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.tuna.tsinghua.edu.cn/@g" /etc/apt/sources.list && apt update
 }
 
 apt_source_ali() {
- sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@http://mirrors.aliyun.com/@g" /etc/apt/sources.list && apt update
+    sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@http://mirrors.aliyun.com/@g" /etc/apt/sources.list && apt update
 }
 
 apt_source_ustc() {
- sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.ustc.edu.cn/@g" /etc/apt/sources.list && apt update
+    sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://mirrors.ustc.edu.cn/@g" /etc/apt/sources.list && apt update
 }
 
 apt_source_163() {
- sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@http://mirrors.163.com/@g" /etc/apt/sources.list && apt update
+    sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@http://mirrors.163.com/@g" /etc/apt/sources.list && apt update
 }
 
 apt_source_huawei() {
- sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://repo.huaweicloud.com/@g" /etc/apt/sources.list && apt update
+    sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@https://repo.huaweicloud.com/@g" /etc/apt/sources.list && apt update
 }
 
 Manual_input_source() {
-read -erp "请输入镜像站地址(示例https://mirrors.bfsu.edu.cn/):" input
-  if [[ -z "${input}" ]];then
-   echo -e "${Info} 请输入正确的镜像站地址"
-   Manual_input_source
-  else
-     symbol=$(echo ${input: -1})
-     character="/"
-    if [ "$sybmol" = "character"  ];
-     then
-      sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@'$input'@g" /etc/apt/sources.list && apt update
-     else
-      sed -i "s@https://.*.c..\|http://.*.c..\|https://.*.c.\|http://.*.c.\|https://.*.org\|http://.*.org\|https://.*.net|http://.*.net@'$input'@g" /etc/apt/sources.list && apt update
-   fi
-   echo -e "${Info} apt源已修改为 ${input}"
-fi
+    read -erp "请输入镜像站地址(示例https://mirrors.bfsu.edu.cn/):" input
+    if [[ -z "${input}" ]];then
+      echo -e "${Info} 请输入正确的镜像站地址"
+      Manual_input_source
+    else
+      symbol=$(echo ${input: -1})
+      character="/"
+      if [ "$sybmol" = "character" ];then
+        sed -i "s@https://.*.c../\|http://.*.c../\|https://.*.c./\|http://.*.c./\|https://.*.org/\|http://.*.org/\|https://.*.net/\|http://.*.net/@'$input'@g" /etc/apt/sources.list && apt update
+      else
+        sed -i "s@https://.*.c..\|http://.*.c..\|https://.*.c.\|http://.*.c.\|https://.*.org\|http://.*.org\|https://.*.net|http://.*.net@'$input'@g" /etc/apt/sources.list && apt update
+      fi
+      echo -e "${Info} apt源已修改为 ${input}"
+    fi
 }
 
 View_napcat_webui_info() {
@@ -699,52 +843,80 @@ Set_dependency() {
 
 }
 
-Install_sshd() {
-INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
-if [ ! "$INODE_NUM" == '2' ]; then
-    echo -e "${Info} 开始安装ssh服务"
-        apt install ssh -y
-        echo -e "${Info} 安装完成,检查ssh配置文件"
-        wget https://gitee.com/soloxiaoye/zhenxun_bot_tool/attach_files/1095259/download/sshd_config -qO /etc/ssh/sshd_config
-        echo -e "${Info} 请设置ssh端口，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
-   Set_hhd_port
-fi
+Uninstall_postgresql() {
+    echo -e "${Tip} 是否卸载 postgresql 数据库 ？(此操作不可逆)"
+    read -erp "请选择 [y/n], 默认为 n:" uninstpsql_check
+    [[ -z "${uninstpsql_check}" ]] && uninstpsql_check='n'
+    if [[ ${uninstpsql_check} == 'y' ]]; then
+      check_pid_postgres
+      [[ -z ${PID} ]] || kill -9 "${PID}"
+      echo -e "${Info} 开始卸载 postgresql 数据库..."
+      sudo apt-get --purge remove postgresql\*
+      sudo apt-get autoremove
+      sudo rm -rf /etc/postgresql/
+      sudo rm -rf /etc/postgresql-common/
+      sudo rm -rf /var/lib/postgresql/
+      sudo userdel -r postgres
+      sudo groupdel postgres
+      psql_dir=$(which psql)
+      [[ -z "$(psql_dir)" ]] && echo -e "${Info} napcat 卸载完成" || echo -e "${Error} napcat 卸载失败！"
+    else
+      echo -e "${Info} 操作已取消..." && menu_postgresql
+    fi
+
 }
 
+Uninstall_napcat() {
+    echo -e "${Tip} 是否卸载 napcat ？(此操作不可逆)"
+    read -erp "请选择 [y/n], 默认为 n:" uninstnapcat_check
+    [[ -z "${uninstnapcat_check}" ]] && uninstnapcat_check='n'
+    if [[ ${uninstnapcat_check} == 'y' ]]; then
+      check_pid_napcat
+      [[ -z ${PID} ]] || kill -9 "${PID}"
+      echo -e "${Info} 开始卸载 napcat..."
+      rm -rf ${napcat_DIR}/napcat || echo -e "${Error} napcat 卸载失败！"
+      echo -e "${Info} napcat 卸载完成"
+    else
+      echo -e "${Info} 操作已取消..." && menu_napcat
+    fi
 
-Set_hhd_port() {
-read -erp "Port:" num
-    [[ -z "$num" ]] && num="${ssh_port}"
-    if [ "${num}" -ge ${mix} -a "${num}" -le ${max} ]; then
-    cd /etc/ssh/ && sed -i "s|Port.*|Port ${num}|g" sshd_config || echo -e "${Error} 配置文件不存在！请检查ssh是否安装正确!"
-    echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${num}"${Font_color_suffix}""]"
-        echo -e "${Info} 启动ssh远程连接服务"
-        /etc/init.d/ssh restart
-    else 
-      echo -e "${Error} 端口设置错误，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
-      Set_hhd_port
+}
+
+Uninstall_zhenxun() {
+    echo -e "${Tip} 是否卸载 zhenxun_bot ？(此操作不可逆)"
+    read -erp "请选择 [y/n], 默认为 n:" uninstllzhenxun_check
+    [[ -z "${uninstllzhenxun_check}" ]] && uninstllzhenxun_check='n'
+    if [[ ${uninstllzhenxun_check} == 'y' ]]; then
+      cd ${WORK_DIR} || exit
+      check_pid_zhenxun
+      [[ -z ${PID} ]] || kill -9 "${PID}"
+      echo -e "${Info} 开始卸载 zhenxun_bot..."
+      rm -rf zhenxun_bot || echo -e "${Error} zhenxun_bot 卸载失败！"
+      echo -e "${Info} zhenxun_bot 卸载完成"
+    else
+      echo -e "${Info} 操作已取消..." && menu_zhenxun
     fi
 
 }
 
 Uninstall_All() {
-  echo -e "${Tip} 是否完全卸载 zhenxun_bot 和 napcat？(此操作不可逆)"
-  read -erp "请选择 [y/n], 默认为 n:" uninstall_check
-  [[ -z "${uninstall_check}" ]] && uninstall_check='n'
-  if [[ ${uninstall_check} == 'y' ]]; then
-    cd ${WORK_DIR} || exit
-    check_pid_zhenxun
-    [[ -z ${PID} ]] || kill -9 "${PID}"
-    echo -e "${Info} 开始卸载 zhenxun_bot..."
-    rm -rf zhenxun_bot || echo -e "${Error} zhenxun_bot 卸载失败！"
-    check_pid_napcat
-    [[ -z ${PID} ]] || kill -9 "${PID}"
-    echo -e "${Info} 开始卸载 napcat..."
-    rm -rf ${napcat_DIR}/napcat || echo -e "${Error} napcat 卸载失败！"
-    echo -e "${Info} 感谢使用真寻bot，期待与你的下次相会！"
-  else
-    echo -e "${Info} 操作已取消..." && menu_zhenxun
-  fi
+    echo -e "${Tip} 是否完全卸载 zhenxun_bot 和 napcat？(此操作不可逆)"
+    read -erp "请选择 [y/n], 默认为 n:" uninstall_check
+    [[ -z "${uninstall_check}" ]] && uninstall_check='n'
+    if [[ ${uninstall_check} == 'y' ]]; then
+      cd ${WORK_DIR} || exit
+      check_pid_zhenxun
+      [[ -z ${PID} ]] || kill -9 "${PID}"
+      echo -e "${Info} 开始卸载 zhenxun_bot..."
+      rm -rf zhenxun_bot || echo -e "${Error} zhenxun_bot 卸载失败！"
+      check_pid_napcat
+      [[ -z ${PID} ]] || kill -9 "${PID}"
+      echo -e "${Info} 开始卸载 napcat..."
+      rm -rf ${napcat_DIR}/napcat || echo -e "${Error} napcat 卸载失败！"
+      echo -e "${Info} 感谢使用真寻bot，期待与你的下次相会！"
+    else
+      echo -e "${Info} 操作已取消..." && menu_zhenxun
+    fi
 }
 
 Install_zhenxun_bot() {
@@ -761,6 +933,7 @@ Install_zhenxun_bot() {
     Installation_dependency
     echo -e "${Info} 开始下载/安装..."
     Download_zhenxun_bot
+    Install_napcat
     echo -e "${Info} 开始设置 用户配置..."
     Set_config
     echo -e "${Info} 开始配置 zhenxun_bot 环境..."
@@ -782,55 +955,45 @@ Install_zhenxun_bot() {
 }
 
 Install_postgresql() {
-INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
-if [ "$INODE_NUM" == '2' ];
-then
-      echo -e "${Info} 开始安装psql数据库"
+    databaseuser="zhenxun"
+    databasename="zhenxun"
+    passwd="zxpassword"
+    INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
+    if [ "$INODE_NUM" == '2' ];then
+      echo -e "${Info} 开始安装postgresql数据库"
       apt-get install postgresql postgresql-contrib -y
-      echo -e "${Info} 设置psql数据库开机自启"
+      echo -e "${Info} 设置postgresql数据库开机自启"
       systemctl enable postgresql
       systemctl restart postgresql
-else
-      echo -e "${Info} 开始安装psql数据库"
+    else
+      echo -e "${Info} 开始安装postgresql数据库"
       sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-        apt-get update
-        apt-get -y install postgresql-13
-    if stat "/etc/ssl/private/ssl-cert-snakeoil.key" | grep 0700; then
-echo -e "${Info} 检测数据库状态 "
-else
- echo -e "${Info} 检测数据库状态 "
-  su postgres <<-EOF
-     pg_createcluster 13 main --start
-     echo -e "${Info} 检测到psql数据库文件权限问题...\n开始修复psql数据库"
-     chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
-     echo -e "${Info} 修复完成，启动psql数据库"
+      wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+      apt-get update
+      apt-get -y install postgresql-13
+      if stat "/etc/ssl/private/ssl-cert-snakeoil.key" | grep 0700; then
+        echo -e "${Info} 检测数据库状态 "
+      else
+        echo -e "${Info} 检测数据库状态 "
+        su postgres <<-EOF
+          pg_createcluster 13 main --start
+          echo -e "${Info} 检测到postgresql数据库文件权限问题...\n开始修复postgresql数据库"
+          sudo chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
+          echo -e "${Info} 修复完成，启动postgresql数据库"
 EOF
-fi
-Start_postgresql
-check_psql
-fi
+      fi
+      Start_postgresql
+      create_database
+      echo -e "${Info} postgresql数据库安装完成"
+    fi
 }
 
-check_psql() {
-    databaseuser="zhenxun"
-    result=$(su postgres << EOF
-        echo 'SELECT u.usename FROM pg_catalog.pg_user u WHERE u.usename='"'${databaseuser}';"
-        psql
+create_database() {
+    su postgres <<-EOF
+      echo -e "CREATE USER $databaseuser WITH PASSWORD '$password';\n CREATE DATABASE $databasename OWNER $databaseuser;\n" | psql
 EOF
-    )
-    usename=$(echo "$result" | rev | awk -F' ' '{print $2}' | cut -b 1)
-    dbname=$(su postgres << EOF
-        psql -l | grep $databaseuser | wc -l
-EOF
-    )
-su postgres <<-EOF
-echo -e "CREATE USER zhenxun WITH PASSWORD 'zxpassword';\n CREATE DATABASE zhenxun OWNER zhenxun;\n" | psql
-EOF
-        echo -e "${Info} 创建数据库成功。用户名 $databaseuser
-数据库名 $databaseuser
-密码zxpassword"
-    echo -e "${Info} psql数据库安装完成"
+    echo -e "${Info} 创建数据库成功\n 连接端口：5432\n 用户名: $databaseuser\n 数据库名: $databasename\n 密码: $password"
+    echo -e "数据库连接地址：DB_URL = "postgres://$databaseuser:$password@localhost:5432/$databasename
 }
 
 Update_Shell(){
@@ -838,8 +1001,8 @@ Update_Shell(){
     bak_dir_name="sh_bak/"
     bak_file_name="${bak_dir_name}install.$(date +%Y%m%d%H%M%s).sh"
     if [[ ! -d ${bak_dir_name} ]]; then
-        sudo mkdir -p ${bak_dir_name}
-        echo -e "${Info} 创建备份文件夹${bak_dir_name}"
+      sudo mkdir -p ${bak_dir_name}
+      echo -e "${Info} 创建备份文件夹${bak_dir_name}"
     fi
     wget ${update_shell_url} -O install.sh.new
     cp -f install.sh "${bak_file_name}"
@@ -850,11 +1013,10 @@ Update_Shell(){
 }
 
 menu_napcat() {
-  echo && echo -e "  zhenxun_bot 一键安装管理脚本修改版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
+  echo && echo -e "  zhenxun_bot 一键安装管理脚本termux容器版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
   -- Sakura | github.com/AkashiCoin --
- ${Green_font_prefix} 0.${Font_color_suffix} 升级脚本
- ————————————
- ${Green_font_prefix} 1.${Font_color_suffix} 安装 zhenxun_bot + napcat
+ ${Green_font_prefix} 0.${Font_color_suffix} 安装/升级 napcat
+ ${Green_font_prefix} 1.${Font_color_suffix} 卸载 napcat
 ————————————
  ${Green_font_prefix} 2.${Font_color_suffix} 启动 napcat
  ${Green_font_prefix} 3.${Font_color_suffix} 停止 napcat
@@ -863,9 +1025,10 @@ menu_napcat() {
  ${Green_font_prefix} 5.${Font_color_suffix} 更换 bot QQ 账号
  ${Green_font_prefix} 6.${Font_color_suffix} 修改 napcat 配置文件
  ${Green_font_prefix} 7.${Font_color_suffix} 查看 napcat 日志
-————————————
  ${Green_font_prefix} 8.${Font_color_suffix} 查看 webui 信息
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 postgresql 菜单
+ ————————————
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix}10.${Font_color_suffix} 切换为 postgresql 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
 if [[ -e "${napcat_DIR}/napcat" ]]; then
     check_pid_napcat
@@ -879,7 +1042,7 @@ if [[ -e "${napcat_DIR}/napcat" ]]; then
     if [ -z "$pathName" ]; then
       echo -e "${Red_font_prefix}当前未登录bot qq"${Font_color_suffix}
     else
-      echo -e "当前bot qq：${Green_font_prefix}${pathName}"${Font_color_suffix}
+      echo -e " 当前bot qq：${Green_font_prefix}${pathName}"${Font_color_suffix}
     fi
   else
       echo -e " 当前状态: napcat ${Red_font_prefix}未安装${Font_color_suffix}"
@@ -888,62 +1051,66 @@ if [[ -e "${napcat_DIR}/napcat" ]]; then
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
   0)
-    Update_Shell
+    update_napcat && menu_napcat
     ;;
   1)
-    Install_zhenxun_bot
+    Uninstall_napcat && menu_napcat
     ;;
   2)
-    Start_napcat
+    Start_napcat && menu_napcat
     ;;
   3)
-    Stop_napcat
+    Stop_napcat && menu_napcat
     ;;
   4)
-    Restart_napcat
+    Restart_napcat && menu_napcat
     ;;
   5)
-    Set_config_bot
+    Set_config_bot && menu_napcat
     ;;
   6)
-    Set_config_napcat
+    Set_config_napcat && menu_napcat
     ;;
   7)
-    View_napcat_log
+    View_napcat_log 
     ;;  
   8)
     View_napcat_webui_info
     ;;
   9)
-    menu_postgresql
+    menu_termux
     ;;
   10)
+    menu_postgresql
+    ;;
+  11)
     menu_zhenxun
     ;;
   *)
-    echo "请输入正确数字 [0-10]"
+    echo "请输入正确数字 [0-10]" && menu_napcat
     ;;
   esac
 }
 
 menu_postgresql() {
-  echo && echo -e "  zhenxun_bot 一键安装管理脚本修改版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
+  echo && echo -e "  zhenxun_bot 一键安装管理脚本termux容器版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
   -- Sakura | github.com/AkashiCoin --
- ${Green_font_prefix} 0.${Font_color_suffix} 升级脚本
- ————————————
- ${Green_font_prefix} 1.${Font_color_suffix} 安装 postgresql 数据库
- ${Green_font_prefix} 2.${Font_color_suffix} 重启 postgresql 数据库
- ${Green_font_prefix} 3.${Font_color_suffix} 停止 postgresql 数据库
- ————————————
- ${Green_font_prefix} 4.${Font_color_suffix} 自动检测 zhenxun_bot 依赖
- ${Green_font_prefix} 5.${Font_color_suffix} 设置 zhenxun napcat 端口
- ${Green_font_prefix} 6.${Font_color_suffix} 修改 dns
- ————————————
- ${Green_font_prefix} 7.${Font_color_suffix} 修改 pip 源
- ${Green_font_prefix} 8.${Font_color_suffix} 修改 apt 源
-————————————
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 napcat 菜单
- ${Green_font_prefix}10.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
+ ${Green_font_prefix} 0.${Font_color_suffix} 启动 postgresql 数据库
+ ${Green_font_prefix} 1.${Font_color_suffix} 重启 postgresql 数据库
+ ${Green_font_prefix} 2.${Font_color_suffix} 停止 postgresql 数据库
+  ————————————
+ ${Green_font_prefix} 3.${Font_color_suffix} 安装 postgresql 数据库
+ ${Green_font_prefix} 4.${Font_color_suffix} 卸载 postgresql 数据库
+  ————————————
+ ${Green_font_prefix} 5.${Font_color_suffix} 创建新数据库
+ ${Green_font_prefix} 6.${Font_color_suffix} 修改数据库密码
+ ${Green_font_prefix} 7.${Font_color_suffix} 查看数据库信息
+  ————————————
+ ${Green_font_prefix} 8.${Font_color_suffix} 导出/导入数据库备份
+  ————————————
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix}10.${Font_color_suffix} 切换为 napcat 菜单
+ ${Green_font_prefix}11.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
   psql_dir=$(which psql)
   if [[ ! -z "$psql_dir" ]]; then
     check_pid_postgres
@@ -959,31 +1126,31 @@ menu_postgresql() {
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
   0)
-    Update_Shell
+    Start_postgresql && menu_postgresql
     ;;
   1)
-    Install_postgresql
+    Restart_postgresql && menu_postgresql
     ;;
   2)
-    Restart_postgresql
+    Stop_postgresql && menu_postgresql
     ;;
   3)
-    Stop_postgresql
+    Install_postgresql && menu_postgresql
     ;;
   4)
     check_module
     ;;
   5)
-    Set_Port
+    Set_Port && menu_postgresql
     ;;
   6)
-    Set_dns
+    Set_dns && menu_postgresql
     ;;
   7)
-    Set_pip_Mirror
+    Set_pip_Mirror && menu_postgresql
     ;;  
   8)
-    Set_apt_source
+    Set_apt_source && menu_postgresql
     ;;
   9)
     menu_napcat
@@ -991,14 +1158,93 @@ menu_postgresql() {
   10)
     menu_zhenxun
     ;;
+  11)
+    menu_zhenxun
+    ;;
   *)
-    echo "请输入正确数字 [0-10]"
+    echo "请输入正确数字 [0-10]" && menu_postgresql
+    ;;
+  esac
+}
+
+menu_termux() {
+  echo && echo -e "  zhenxun_bot 一键安装管理脚本termux容器版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
+  -- Sakura | github.com/AkashiCoin --
+ ${Green_font_prefix} 0.${Font_color_suffix} 启动 postgresql 数据库
+ ${Green_font_prefix} 1.${Font_color_suffix} 重启 postgresql 数据库
+ ${Green_font_prefix} 2.${Font_color_suffix} 停止 postgresql 数据库
+  ————————————
+ ${Green_font_prefix} 3.${Font_color_suffix} 安装 postgresql 数据库
+ ${Green_font_prefix} 4.${Font_color_suffix} 卸载 postgresql 数据库
+ 自动检测 zhenxun_bot 依赖
+  ————————————
+ ${Green_font_prefix} 5.${Font_color_suffix} 设置 zhenxun napcat 端口
+ ${Green_font_prefix} 6.${Font_color_suffix} 修改 dns
+ ————————————
+ ${Green_font_prefix} 7.${Font_color_suffix} 修改 pip 源
+ ${Green_font_prefix} 8.${Font_color_suffix} 修改 apt 源
+————————————
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 postgresql 菜单
+ ${Green_font_prefix}10.${Font_color_suffix} 切换为 napcat 菜单
+ ${Green_font_prefix}11.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
+  psql_dir=$(which psql)
+  if [[ ! -z "$psql_dir" ]]; then
+    check_pid_postgres
+    if [[ -n "${PID}" ]]; then
+      echo -e " 当前状态: postgres ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
+    else
+      echo -e " 当前状态: postgres ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
+    fi
+  else
+      echo -e " 当前状态: postgres ${Red_font_prefix}未安装${Font_color_suffix}"
+  fi
+  echo
+  read -erp " 请输入数字 [0-10]:" num
+  case "$num" in
+  0)
+    Update_Shell && menu_termux
+    ;;
+  1)
+    Install_postgresql  && menu_termux
+    ;;
+  2)
+    Restart_postgresql  && menu_termux
+    ;;
+  3)
+    Stop_postgresql  && menu_termux
+    ;;
+  4)
+    check_module && menu_termux
+    ;;
+  5)
+    Set_Port  && menu_termux
+    ;;
+  6)
+    Set_dns  && menu_termux
+    ;;
+  7)
+    Set_pip_Mirror  && menu_termux
+    ;;  
+  8)
+    Set_apt_source  && menu_termux
+    ;;
+  9)
+    menu_postgresql
+    ;;
+  10)
+    menu_napcat
+    ;;
+  11)
+    menu_zhenxun
+    ;;
+  *)
+    echo "请输入正确数字 [0-10]" && menu_termux
     ;;
   esac
 }
 
 menu_zhenxun() {
-  echo && echo -e "  zhenxun_bot 一键安装管理脚本修改版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
+  echo && echo -e "  zhenxun_bot 一键安装管理脚本termux容器版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
   -- Sakura | github.com/AkashiCoin --
  ${Green_font_prefix} 0.${Font_color_suffix} 升级脚本
  ————————————
@@ -1013,8 +1259,9 @@ menu_zhenxun() {
  ${Green_font_prefix} 7.${Font_color_suffix} 查看 zhenxun_bot 日志
 ————————————
  ${Green_font_prefix} 8.${Font_color_suffix} 卸载 zhenxun_bot + napcat
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 postgresql 菜单
- ${Green_font_prefix}10.${Font_color_suffix} 切换为 napcat 菜单" && echo
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix}10.${Font_color_suffix} 切换为 napcat 菜单
+ ${Green_font_prefix}11.${Font_color_suffix} 切换为 postgresql 菜单" && echo
   if [[ -e "${WORK_DIR}/zhenxun_bot/bot.py" ]]; then
     check_pid_zhenxun
     if [[ -n "${PID}" ]]; then
@@ -1056,13 +1303,16 @@ menu_zhenxun() {
     Uninstall_All
     ;;
   9)
-    menu_postgresql
+    menu_termux
     ;;
   10)
     menu_napcat
     ;;
+  11)
+    menu_postgresql
+    ;;
   *)
-    echo "请输入正确数字 [0-10]"
+    echo "请输入正确数字 [0-10]" && menu_zhenxun
     ;;
   esac
 }
