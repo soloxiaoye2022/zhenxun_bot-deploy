@@ -75,7 +75,7 @@ check_sys() {
     if [[ ! -e "~/.zshrc" ]];then
       nonomatch=$(cat ~/.zshrc | grep nonomatch)
       if [[ -z "${nonomatch}" ]];then
-        echo "setopt nonomatch" >> /root/.zshrc
+        echo "setopt nonomatch" >> ~/.zshrc
         source ~/.zshrc
       fi
     fi
