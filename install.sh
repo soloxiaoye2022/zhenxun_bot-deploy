@@ -933,7 +933,7 @@ Install_zhenxun_bot() {
     Installation_dependency
     echo -e "${Info} 开始下载/安装..."
     Download_zhenxun_bot
-    update_napcat
+    Install_napcat
     echo -e "${Info} 开始设置 用户配置..."
     Set_config
     echo -e "${Info} 开始配置 zhenxun_bot 环境..."
