@@ -391,8 +391,9 @@ Download_zhenxun_bot() {
       fi
     done
 
-    mv "${TMP_DIR}/zhenxun_bot" ./
-    mv ${TMP_DIR}/zhenxun_bot_plugins/plugins/* ${ZX_DIR}/zhenxun/plugins/
+    cd ${WORK_DIR}
+    mv ${TMP_DIR}/zhenxun_bot ./
+    mv ${TMP_DIR}/zhenxun_bot_plugins/plugins/* ${ZX_DIR}zhenxun/plugins/
     echo -e "${Info} 开始下载抽卡相关资源..."
     if [[ -e "${WORK_DIR}/zhenxun_bot/draw_card" ]]; then
       echo -e "${Info} 抽卡资源文件已存在，跳过下载"
