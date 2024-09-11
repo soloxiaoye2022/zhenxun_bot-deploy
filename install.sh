@@ -233,9 +233,8 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             libxrandr2 \
             libgbm1 \
             libgtk-3-0 \
-            libasound2 \
-            libasound2t64 \
             python3-pip
+        apt-get install libasound2t64 -y && apt-get install -y libasound2
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
         Install_postgresql
     elif [[ ${release} == "ubuntu" ]]; then
@@ -269,9 +268,8 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             libxrandr2 \
             libgbm1 \
             libgtk-3-0 \
-            libasound2 \
-            libasound2t64 \
             python3-pip
+        apt-get install libasound2t64 -y && apt-get install -y libasound2
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
         Install_postgresql
     elif [[ ${release} == "archlinux" ]]; then
