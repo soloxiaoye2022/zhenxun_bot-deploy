@@ -191,7 +191,7 @@ EOF
         apt-get update
         apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese wqy* build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev make
         if  ! which python3.11 && ! which python3.12 && ! which python3.10;then
-            wget ${ghproxy}github.com/openssl/openssl/releases/download/openssl-3.0.7/openssl-3.0.7.tar.gz 
+            wget ${ghproxy}https://github.com/openssl/openssl/releases/download/openssl-3.0.7/openssl-3.0.7.tar.gz 
             tar -zxf openssl-3.0.7.tar.gz && cd openssl-3.0.7
             ./config -fPIC --prefix=/usr/include/openssl enable-shared
             make && make install
