@@ -72,13 +72,13 @@ check_sys() {
         echo -e "zhenxun_bot 暂不支持该Linux发行版" && exit 1
     fi
     bit=$(uname -m)
-    if [[ ! -e "~/.zshrc" ]];then
-      nonomatch=$(cat ~/.zshrc | grep nonomatch)
-      if [[ -z "${nonomatch}" ]];then
-        echo "setopt nonomatch" >> ~/.zshrc
-        source ~/.zshrc
-      fi
-    fi
+    #if [[ ! -e "~/.zshrc" ]];then
+    #  nonomatch=$(cat ~/.zshrc | grep nonomatch)
+    #  if [[ -z "${nonomatch}" ]];then
+    #    echo "setopt nonomatch" >> ~/.zshrc
+    #    source ~/.zshrc
+    #  fi
+    #fi
 }
 
 check_installed_zhenxun_status() {
@@ -189,7 +189,7 @@ EOF
         su postgres -c "psql -f /tmp/sql.sql"
     elif [[ ${release} == "debian" ]]; then
         apt-get update
-        apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese wqy* build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev make
+        apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese  build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev make
         if  ! which python3.11 && ! which python3.12 && ! which python3.10;then
             wget ${ghproxy}https://github.com/openssl/openssl/releases/download/openssl-3.0.7/openssl-3.0.7.tar.gz 
             tar -zxf openssl-3.0.7.tar.gz && cd openssl-3.0.7
