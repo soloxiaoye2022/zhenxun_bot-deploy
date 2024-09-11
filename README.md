@@ -1,7 +1,7 @@
 # zhenxun_bot-deploy
- 真寻bot一键部署脚本修改版
+ 真寻bot一键部署脚本termux版
 ## 食用方法  
-此修改版可以在服务器、虚拟机以及tmoe的proot容器(proot容器只支持arm64架构的debian12和Ubuntu22.04，暂未支持chroot容器和docker容器）部署真寻。  
+此版本可以在服务器、虚拟机以及使用tmoe安装的proot容器(proot容器只支持arm64架构的debian12和Ubuntu22.04，暂未支持chroot容器和docker容器）部署真寻。  
 proot容器相关软件及教程:
 [UTermux/ZeroTermux/TermuxWatch下载站](https://blog.utermux.dev/ut/download.html)  
 [zerotermux下载地址](https://d.icdown.club/repository/main/ZeroTermux/ZeroTermux%20-0.118.21.apk)  
@@ -18,6 +18,7 @@ proot容器相关软件及教程:
 
 **在termux部署真寻建议使用tmoe脚本安装proot容器，chroot容器或将在下个版本支持。使用其他方式安装的容器自行测试。
 
+tmoe脚本：
 ```bash
 
 bash -c "$(curl -L gitee.com/mo2/linux/raw/2/2)"
@@ -39,6 +40,10 @@ bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/sol
 ## 更新
 
 ****
+
+**2024/9/11**
+
+* 优化napcat安装流程
 
 **2024/9/1**
 
