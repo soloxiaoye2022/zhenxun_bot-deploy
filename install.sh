@@ -424,7 +424,7 @@ update_napcat() {
     echo -e "${Info} 最新NapCatQQ版本：${napcat_version}"
     if [ -d "${napcat_DIR}/napcat" ]; then
       current_version=$(jq -r '.version' "${napcat_DIR}/napcat/package.json")
-      echo "NapCatQQ已安装，版本：v${current_version}"
+      echo -e "${Info} NapCatQQ已安装，版本：v${current_version}"
       target_version=${napcat_version#v}
       IFS='.' read -r i1 i2 i3 <<< "$current_version"
       IFS='.' read -r t1 t2 t3 <<< "$target_version"
