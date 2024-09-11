@@ -1052,28 +1052,27 @@ if [[ -e "${napcat_DIR}/napcat" ]]; then
   case "$num" in
   0)
     update_napcat
-    menu_napcat
     ;;
   1)
-    Uninstall_napcat && menu_napcat
+    Uninstall_napcat
     ;;
   2)
-    Start_napcat && menu_napcat
+    Start_napcat
     ;;
   3)
-    Stop_napcat && menu_napcat
+    Stop_napcat
     ;;
   4)
-    Restart_napcat && menu_napcat
+    Restart_napcat
     ;;
   5)
-    Set_config_bot && menu_napcat
+    Set_config_bot
     ;;
   6)
-    Set_config_napcat && 
+    Set_config_napcat
     ;;
   7)
-    View_napcat_log 
+    View_napcat_log
     ;;  
   8)
     View_napcat_webui_info
@@ -1127,31 +1126,31 @@ menu_postgresql() {
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
   0)
-    Start_postgresql && menu_postgresql
+    Start_postgresql 
     ;;
   1)
-    Restart_postgresql && menu_postgresql
+    Restart_postgresql 
     ;;
   2)
-    Stop_postgresql && menu_postgresql
+    Stop_postgresql 
     ;;
   3)
-    Install_postgresql && menu_postgresql
+    Install_postgresql 
     ;;
   4)
     check_module
     ;;
   5)
-    Set_Port && menu_postgresql
+    Set_Port 
     ;;
   6)
-    Set_dns && menu_postgresql
+    Set_dns 
     ;;
   7)
-    Set_pip_Mirror && menu_postgresql
+    Set_pip_Mirror 
     ;;  
   8)
-    Set_apt_source && menu_postgresql
+    Set_apt_source 
     ;;
   9)
     menu_napcat
