@@ -961,7 +961,7 @@ Install_postgresql() {
     passwd="zxpassword"
     INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
     if [ "$INODE_NUM" == '2' ];then
-      echo -e "${Info} 开始安装postgresql数据库"
+      echo -e "${Info} 开始安装postgresql数据库1"
       apt-get install postgresql postgresql-contrib -y
       echo -e "${Info} 设置postgresql数据库开机自启"
       systemctl enable postgresql
@@ -979,7 +979,7 @@ Install_postgresql() {
         su postgres <<-EOF
           pg_createcluster 13 main --start
           echo -e "${Info} 检测到postgresql数据库文件权限问题...\n开始修复postgresql数据库"
-          sudo chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
+          chmod -R 700 /etc/ssl/private/ssl-cert-snakeoil.key
           echo -e "${Info} 修复完成，启动postgresql数据库"
 EOF
       fi
