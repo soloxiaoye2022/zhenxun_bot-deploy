@@ -645,7 +645,7 @@ View_zhenxun_log() {
 }
 
 Set_config_zhenxun() {
-    vim "${WORK_DIR}"/zhenxun_bot/configs/config.yaml
+    vim "${ZX_DIR}"/zhenxun/configs/config.yaml
 }
 
 Start_napcat() {
