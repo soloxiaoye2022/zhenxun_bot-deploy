@@ -713,6 +713,14 @@ View_napcat_log() {
     tail -f -n 100 ${napcat_DIR}/napcat/logs/napcat_${pathName}.log
 }
 
+View_postgresql_info() {
+    echo -e "${Info} 查询信息如下..."
+    su postgres <<-EOF
+          echo -e '\l' | psql
+EOF
+
+}
+
 Set_config_napcat() {
     check_installed_napcat_status
     cd ${napcat_DIR}/napcat/config
@@ -957,7 +965,7 @@ Install_zhenxun_bot() {
 Install_postgresql() {
     databaseuser="zhenxun"
     databasename="zhenxun"
-    passwd="zxpassword"
+    password="zxpassword"
     INODE_NUM=$(ls -ali / | sed '2!d' |awk {'print $1'})
     if [ "$INODE_NUM" == '2' ];then
       echo -e "${Info} 开始安装postgresql数据库1"
@@ -970,7 +978,7 @@ Install_postgresql() {
       sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
       wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
       apt-get update
-      apt-get -y install libc6==3.34postgresql-13
+      apt-get -y install postgresql-13
       if stat "/etc/ssl/private/ssl-cert-snakeoil.key" | grep 0700; then
         echo -e "${Info} 检测数据库状态 "
       else
@@ -1022,7 +1030,7 @@ menu_napcat() {
  ${Green_font_prefix} 3.${Font_color_suffix} 停止 napcat
  ${Green_font_prefix} 4.${Font_color_suffix} 重启 napcat
 ————————————
- ${Green_font_prefix} 5.${Font_color_suffix} 更换 bot QQ 账号
+ ${Green_font_prefix} 5.${Font_color_suffix} 更换 bot QQ 账号(待实现)
  ${Green_font_prefix} 6.${Font_color_suffix} 修改 napcat 配置文件
  ${Green_font_prefix} 7.${Font_color_suffix} 查看 napcat 日志
  ${Green_font_prefix} 8.${Font_color_suffix} 查看 webui 信息
@@ -1066,7 +1074,7 @@ if [[ -e "${napcat_DIR}/napcat" ]]; then
     Restart_napcat
     ;;
   5)
-    Set_config_bot
+    menu_napcat
     ;;
   6)
     Set_config_napcat
@@ -1100,13 +1108,13 @@ menu_postgresql() {
  ${Green_font_prefix} 2.${Font_color_suffix} 停止 postgresql 数据库
   ————————————
  ${Green_font_prefix} 3.${Font_color_suffix} 安装 postgresql 数据库
- ${Green_font_prefix} 4.${Font_color_suffix} 卸载 postgresql 数据库
+ ${Green_font_prefix} 4.${Font_color_suffix} 卸载 postgresql 数据库(待实现)
   ————————————
- ${Green_font_prefix} 5.${Font_color_suffix} 创建新数据库
- ${Green_font_prefix} 6.${Font_color_suffix} 修改数据库密码
+ ${Green_font_prefix} 5.${Font_color_suffix} 创建新数据库(待实现)
+ ${Green_font_prefix} 6.${Font_color_suffix} 修改数据库密码(待实现)
  ${Green_font_prefix} 7.${Font_color_suffix} 查看数据库信息
   ————————————
- ${Green_font_prefix} 8.${Font_color_suffix} 导出/导入数据库备份
+ ${Green_font_prefix} 8.${Font_color_suffix} 导出/导入数据库备份(待实现)
   ————————————
  ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 napcat 菜单
@@ -1138,19 +1146,19 @@ menu_postgresql() {
     Install_postgresql 
     ;;
   4)
-    check_module
+    menu_postgresql
     ;;
   5)
-    Set_Port 
+    menu_postgresql 
     ;;
   6)
     Set_dns 
     ;;
   7)
-    Set_pip_Mirror 
+    View_postgresql_info 
     ;;  
   8)
-    Set_apt_source 
+    menu_postgresql 
     ;;
   9)
     menu_napcat
@@ -1170,23 +1178,16 @@ menu_postgresql() {
 menu_termux() {
   echo && echo -e "  zhenxun_bot 一键安装管理脚本termux容器版 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
   -- Sakura | github.com/AkashiCoin --
- ${Green_font_prefix} 0.${Font_color_suffix} 启动 postgresql 数据库
- ${Green_font_prefix} 1.${Font_color_suffix} 重启 postgresql 数据库
- ${Green_font_prefix} 2.${Font_color_suffix} 停止 postgresql 数据库
+ ${Green_font_prefix} 0.${Font_color_suffix} 修改 dns
+ ${Green_font_prefix} 1.${Font_color_suffix} 修改 apt 源
+ ${Green_font_prefix} 2.${Font_color_suffix} 修改 pip 源
   ————————————
- ${Green_font_prefix} 3.${Font_color_suffix} 安装 postgresql 数据库
- ${Green_font_prefix} 4.${Font_color_suffix} 卸载 postgresql 数据库
- 自动检测 zhenxun_bot 依赖
+ ${Green_font_prefix} 3.${Font_color_suffix} 设置 zhenxun napcat 端口
+ ${Green_font_prefix} 4.${Font_color_suffix} 自动检测 zhenxun_bot 依赖
   ————————————
- ${Green_font_prefix} 5.${Font_color_suffix} 设置 zhenxun napcat 端口
- ${Green_font_prefix} 6.${Font_color_suffix} 修改 dns
- ————————————
- ${Green_font_prefix} 7.${Font_color_suffix} 修改 pip 源
- ${Green_font_prefix} 8.${Font_color_suffix} 修改 apt 源
-————————————
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 postgresql 菜单
- ${Green_font_prefix}10.${Font_color_suffix} 切换为 napcat 菜单
- ${Green_font_prefix}11.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
+ ${Green_font_prefix} 5.${Font_color_suffix} 切换为 postgresql 菜单
+ ${Green_font_prefix} 6.${Font_color_suffix} 切换为 napcat 菜单
+ ${Green_font_prefix} 7.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
   psql_dir=$(which psql)
   if [[ ! -z "$psql_dir" ]]; then
     check_pid_postgres
@@ -1202,41 +1203,29 @@ menu_termux() {
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
   0)
-    Update_Shell && menu_termux
+    Set_dns
     ;;
   1)
-    Install_postgresql  && menu_termux
+    Set_apt_source
     ;;
   2)
-    Restart_postgresql  && menu_termux
+    Set_pip_Mirror
     ;;
   3)
-    Stop_postgresql  && menu_termux
+    Set_Port
     ;;
   4)
-    check_module && menu_termux
+    check_module
     ;;
   5)
-    Set_Port  && menu_termux
-    ;;
-  6)
-    Set_dns  && menu_termux
-    ;;
-  7)
-    Set_pip_Mirror  && menu_termux
-    ;;  
-  8)
-    Set_apt_source  && menu_termux
-    ;;
-  9)
     menu_postgresql
     ;;
-  10)
+  6)
     menu_napcat
     ;;
-  11)
+  7)
     menu_zhenxun
-    ;;
+    ;;  
   *)
     echo "请输入正确数字 [0-10]" && menu_termux
     ;;
