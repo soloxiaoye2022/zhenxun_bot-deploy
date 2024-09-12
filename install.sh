@@ -377,14 +377,14 @@ Download_zhenxun_bot() {
           git clone ${ghproxy}${zhenxun_bot_plugins_url}
           if [ $? = 0 ] ; then
             break
-          elif [ $i -lt 3 ]; then
+          elif [ $i -lt 5 ]; then
             echo -e "${Info} 第${i}次尝试失败，正在重试..."
           else
             echo -e "${Error} 无法下载 zhenxun_bot 插件库，请安装结束后自行安装\n插件库地址：${ghproxy}${zhenxun_bot_plugins_url}。"
           fi
         done
         break
-      elif [ $i -lt 3 ]; then
+      elif [ $i -lt 5 ]; then
         echo -e "${Info} 第${i}次尝试失败，正在重试..."
       fi
     done
@@ -448,7 +448,7 @@ Install_linuxqq() {
       sudo dpkg -i ./QQ.${format}
       if [ $? = 0 ] ; then
         break
-      elif [ $i -lt 3 ]; then
+      elif [ $i -lt 5 ]; then
         echo -e "${Info} 第${i}次尝试失败，正在重试..."
       else
         echo -e "${Error} 安装NapCatQQ失败，请检查错误。" && exit 1
@@ -476,14 +476,14 @@ Download_napcat() {
           sudo wget -O "${default_file}" "${ghproxy}${napcat_download_url}"
           if [ $? = 0 ] ; then
             break
-          elif [ $i -lt 3 ]; then
+          elif [ $i -lt 5 ]; then
             echo -e "${Info} 第${i}次尝试失败，正在重试..."
           else
             echo -e "${Error} 下载NapCatQQ失败，请检查错误。" && exit 1
           fi
         done
         break 
-      elif [ $i -lt 3 ]; then
+      elif [ $i -lt 5 ]; then
         echo -e "${Info} 第${i}次尝试失败，正在重试..."
       else
         echo -e "${Error} 无法获取NapCatQQ版本，请检查错误。" && exit 1
