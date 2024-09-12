@@ -1108,7 +1108,7 @@ menu_postgresql() {
  ${Green_font_prefix} 2.${Font_color_suffix} 停止 postgresql 数据库
   ————————————
  ${Green_font_prefix} 3.${Font_color_suffix} 安装 postgresql 数据库
- ${Green_font_prefix} 4.${Font_color_suffix} 卸载 postgresql 数据库(待实现)
+ ${Green_font_prefix} 4.${Font_color_suffix} 卸载 postgresql 数据库
   ————————————
  ${Green_font_prefix} 5.${Font_color_suffix} 创建新数据库(待实现)
  ${Green_font_prefix} 6.${Font_color_suffix} 修改数据库密码(待实现)
@@ -1146,7 +1146,7 @@ menu_postgresql() {
     Install_postgresql 
     ;;
   4)
-    menu_postgresql
+    Uninstall_postgresql
     ;;
   5)
     menu_postgresql 
