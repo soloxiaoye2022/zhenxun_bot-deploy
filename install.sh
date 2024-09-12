@@ -369,11 +369,11 @@ Download_zhenxun_bot() {
     check_arch
     echo -e "${Info} 开始下载最新版 zhenxun_bot ..."
     cd "${TMP_DIR}" || exit 1
-    for (( i=1; i<=3; i++ )); do
+    for (( i=1; i<=5; i++ )); do
       git clone -b dev "${ghproxy}${zhenxun_url}"
       if [ $? = 0 ] ; then
         echo -e "${Info} 开始下载 zhenxun_bot 插件库 ..."
-        for (( i=1; i<=3; i++ )); do
+        for (( i=1; i<=5; i++ )); do
           git clone ${ghproxy}${zhenxun_bot_plugins_url}
           if [ $? = 0 ] ; then
             break
@@ -442,10 +442,10 @@ Install_linuxqq() {
     check_arch
     check_sys
     echo -e "${Info} 开始安装LinuxQQ..."
-    for (( i=1; i<=3; i++ )); do
+    for (( i=1; i<=5; i++ )); do
       qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/0724892e/linuxqq_3.2.12-27597_${arch}.${format}"
       sudo curl -L "${qq_download_url}" -o QQ.${format}
-      sudo apt install -f -y ./QQ.${format}
+      sudo dpkg -i ./QQ.${format}
       if [ $? = 0 ] ; then
         break
       elif [ $i -lt 3 ]; then
@@ -469,10 +469,10 @@ Download_napcat() {
     echo -e "${Info} 尝试获取最新NapCatQQ版本..."
     get_napcat_version
     cd "${TMP_DIR}" || exit 1
-    for (( i=1; i<=3; i++ )); do
+    for (( i=1; i<=5; i++ )); do
       if [ ! -z "$napcat_version" ]; then
         echo -e "${Info} 最新NapCatQQ版本：${napcat_version}, 开始下载..."
-        for (( i=1; i<=3; i++ )); do
+        for (( i=1; i<=5; i++ )); do
           sudo wget -O "${default_file}" "${ghproxy}${napcat_download_url}"
           if [ $? = 0 ] ; then
             break
