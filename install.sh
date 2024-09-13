@@ -510,6 +510,7 @@ Download_napcat() {
     
     if [ ! -d "${napcat_DIR}/napcat" ]; then
       sudo mkdir "${napcat_DIR}/napcat/"
+      sudo mkdir "${napcat_DIR}/napcat/logs"
     fi
 
     echo -e "${Info} 正在移动文件..."
