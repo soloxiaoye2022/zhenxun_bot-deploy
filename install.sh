@@ -234,7 +234,10 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             libgbm1 \
             libgtk-3-0 \
             python3-pip
-        apt-get install libasound2t64 -y && apt-get install -y libasound2
+        apt-get install libasound2t64 -y
+        apt-get install -y libasound2
+        apt remove libfprint-2-2
+        apt --fix-broken install
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
         Install_postgresql
     elif [[ ${release} == "ubuntu" ]]; then
@@ -269,7 +272,10 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             libgbm1 \
             libgtk-3-0 \
             python3-pip
-        apt-get install libasound2t64 -y && apt-get install -y libasound2
+        apt-get install libasound2t64 -y
+        apt-get install -y libasound2
+        apt remove libfprint-2-2
+        apt --fix-broken install
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
         Install_postgresql
     elif [[ ${release} == "archlinux" ]]; then
@@ -444,14 +450,18 @@ Install_linuxqq() {
     echo -e "${Info} 开始安装LinuxQQ..."
     for (( i=1; i<=5; i++ )); do
       qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/0724892e/linuxqq_3.2.12-27597_${arch}.${format}"
-      sudo curl -L "${qq_download_url}" -o QQ.${format}
-      sudo dpkg -i ./QQ.${format}
+      sudo wget -O QQ.${format} "${qq_download_url}"
       if [ $? = 0 ] ; then
-        break
+        sudo dpkg -i ./QQ.${format}
+        if [ $? = 0 ] ; then
+          break
+        else
+          echo -e "${Error} 下载LinuxQQ失败，请检查错误。" && exit 1    
+        fi
       elif [ $i -lt 5 ]; then
-        echo -e "${Info} 第${i}次尝试失败，正在重试..."
+        echo -e "${Info} 第${i}次尝试下载LinuxQQ失败，正在重试..."
       else
-        echo -e "${Error} 安装NapCatQQ失败，请检查错误。" && exit 1
+        echo -e "${Error} 下载LinuxQQ失败，请检查错误。" && exit 1
       fi
     done
     update_linuxqq_config
@@ -477,14 +487,14 @@ Download_napcat() {
           if [ $? = 0 ] ; then
             break
           elif [ $i -lt 5 ]; then
-            echo -e "${Info} 第${i}次尝试失败，正在重试..."
+            echo -e "${Info} 第${i}次尝试下载NapCatQQ失败，正在重试..."
           else
             echo -e "${Error} 下载NapCatQQ失败，请检查错误。" && exit 1
           fi
         done
         break 
       elif [ $i -lt 5 ]; then
-        echo -e "${Info} 第${i}次尝试失败，正在重试..."
+        echo -e "${Info} 第${i}次尝试获取最新版本失败，正在重试..."
       else
         echo -e "${Error} 无法获取NapCatQQ版本，请检查错误。" && exit 1
       fi
@@ -516,7 +526,9 @@ Download_napcat() {
     output_index_js=$(echo -e "const path = require('path');\nconst CurrentPath = path.dirname(__filename)\nconst hasNapcatParam = process.argv.includes('--no-sandbox');\nif (hasNapcatParam) {\n    (async () => {\n        await import(\\\"file://\\\" + path.join(CurrentPath, './napcat/napcat.mjs'));\n    })();\n} else {\n    require('./launcher.node').load('external_index', module);\n}")
     sudo bash -c "echo \"$output_index_js\" > \"${napcat_DIR}/index.js\""
 
-    if [ $? -ne 0 ]; then
+    if [ $? = 0 ]; then
+      echo -e "${Info} NapCatQQ安装成功！"
+    else
       echo -e "${Error} index.js文件写入失败，请以root身份运行。"
       clean
       exit 1
@@ -600,6 +612,7 @@ Set_Port() {
           cd ${napcat_DIR}/napcat/config  && sed -i -e 's/"urls":.*/"urls": ["'"ws:\/\/127.0.0.1:$Port\/onebot\/v11\/ws\/"'"]/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
           cd ${WORK_DIR}/zhenxun_bot && sed -i -e "s/PORT.*/PORT = ${Port}/" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
           echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${Port}"${Font_color_suffix}""]"
+          break
         else 
           echo -e "${Error} 端口设置错误，取值范围[""${Green_font_prefix}"${mix}-${max}"${Font_color_suffix}""]"
         fi  
