@@ -45,6 +45,10 @@ bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/sol
 
 ****
 
+**2024/9/14**
+
+* 添加playwright镜像加速
+
 **2024/9/11**
 
 * 优化napcat安装流程
