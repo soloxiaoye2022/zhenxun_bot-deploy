@@ -452,12 +452,19 @@ Install_linuxqq() {
       qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/0724892e/linuxqq_3.2.12-27597_${arch}.${format}"
       sudo wget -O QQ.${format} "${qq_download_url}"
       if [ $? = 0 ] ; then
-        sudo dpkg -i ./QQ.${format}
-        if [ $? = 0 ] ; then
-          break
-        else
-          echo -e "${Error} 下载LinuxQQ失败，请检查错误。" && exit 1    
-        fi
+        sudo apt-get install libnotify4 xdg-utils libsecret-1-0 -y
+        while true; do
+          sudo dpkg -i ./QQ.${format}
+          if [ $? = 0 ] ; then
+            break
+          elif [ $? -ge 0 ]; then
+            echo -e "${Info} 安装LinuxQQ失败，正在尝试修复环境..."
+            apt --fix-broken install
+          else
+            echo -e "${Error} 安装LinuxQQ失败，请检查错误。" && exit 1    
+          fi
+        done
+        break
       elif [ $i -lt 5 ]; then
         echo -e "${Info} 第${i}次尝试下载LinuxQQ失败，正在重试..."
       else
