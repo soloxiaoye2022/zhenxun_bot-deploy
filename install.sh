@@ -874,7 +874,7 @@ Set_dependency() {
     index_dir="${env_dir}/lib/${python_v}/site-packages/playwright/driver/package/lib/server/registry/index.js"
     sed -i -e 's/const PLAYWRIGHT_CDN_MIRRORS =.*/const PLAYWRIGHT_CDN_MIRRORS = ["https:\/\/registry.npmmirror.com\/-\/binary\/playwright"];/' $index_dir
     apt remove libfprint-2-2
-    apt --fix-broken install
+    apt --fix-broken install -y
     apt-get install libevent-2.1-7 -y
     poetry run playwright install-deps chromium
     poetry run playwright install chromium
