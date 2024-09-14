@@ -178,7 +178,7 @@ Installation_dependency() {
         rpm -v --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
         rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
         yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-        yum install -y postgresql13-server ffmpeg ffmpeg-devel atk at-spi2-atk cups-libs libxkbcommon libXcomposite libXdamage libXrandr mesa-libgbm gtk3
+        yum install -y postgresql13-server ffmpeg ffmpeg-devel atk at-spi2-atk cups-libs libxkbcommon libXcomposite libXdamage libXrandr mesa-libgbm gtk3 sqlite-devel
         /usr/psql-13/bin/postgresql-13-setup initdb
         systemctl enable postgresql-13
         systemctl start postgresql-13
@@ -221,6 +221,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             curl \
             xvfb \
             screen \
+            sqlite3 \
             ffmpeg \
             libgl1 \
             libglib2.0-0 \
@@ -239,7 +240,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
         apt remove libfprint-2-2
         apt --fix-broken install
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
-        Install_postgresql
+        #Install_postgresql
     elif [[ ${release} == "ubuntu" ]]; then
         apt-get update
         apt-get install -y software-properties-common ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming
@@ -258,6 +259,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             jq \
             curl \
             xvfb \
+            sqlite3 \
             screen \
             ffmpeg \
             libgl1 \
@@ -277,7 +279,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
         apt remove libfprint-2-2
         apt --fix-broken install
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
-        Install_postgresql
+        #Install_postgresql
     elif [[ ${release} == "archlinux" ]]; then
         pacman -Sy python python-pip unzip --noconfirm
     fi
@@ -607,7 +609,7 @@ Set_config() {
     Set_config_admin
     Set_config_bot
     Set_Port
-    Set_postgresql_bind
+    Set_sql_bind
     
 }
 
@@ -627,8 +629,9 @@ Set_Port() {
     done   
 }
 
-Set_postgresql_bind() {
-    echo -e "${Info} 开始设置 PostgreSQL 连接语句..."
+Set_sql_bind() {
+    echo -e "${Info} 开始设置 SQL 连接语句..."
+    mkdir ${ZX_DIR}/zhenxun/data/db/
     cd ${WORK_DIR}/zhenxun_bot && sed -i 's|DB_URL.*|DB_URL = "postgres://zhenxun:zxpassword@localhost:5432/zhenxun"|g' .env.dev
 }
 
