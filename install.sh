@@ -190,7 +190,7 @@ EOF
     elif [[ ${release} == "debian" ]]; then
         apt-get update
         apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese  build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev make
-        if  ! which python3.11 && ! which python3.12 && ! which python3.10;then
+        if  ! which python3.11 && ! which python3.12 && ! which python3.10 && ! which python3.9;then
             wget ${ghproxy}https://github.com/openssl/openssl/releases/download/openssl-3.0.7/openssl-3.0.7.tar.gz 
             tar -zxf openssl-3.0.7.tar.gz && cd openssl-3.0.7
             ./config -fPIC --prefix=/usr/include/openssl enable-shared
@@ -246,7 +246,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
         apt-get install -y software-properties-common ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming
         fc-cache -f -v
         echo -e "\n" | add-apt-repository ppa:deadsnakes/ppa
-        if  ! which python3.12 && ! which python3.11 && ! which python3.10;then
+        if  ! which python3.12 && ! which python3.11 && ! which python3.10 && ! which python3.9;then
             apt-get install -y python3.10-full
             python_v="python3.10"
         fi
@@ -867,6 +867,10 @@ Set_dependency() {
     pip install poetry || pip install poetry --break-system-packages
     poetry env use ${python_v}
     poetry lock || poetry lock --no-update
+    if [ $python_v = "3.9" ]; then
+      sed -i 's|python =.*|python = "\^3\.9"|g' pyproject.toml
+      sed -i 's|pythonVersion =.*|pythonVersion = "3.9"|g' pyproject.toml
+    fi
     poetry install
     poetry run pip install nonebot-plugin-alconna==0.51.1  arclet-alconna==1.8.23 arclet-alconna-tools==0.7.9 
     poetry run pip install jieba matplotlib wordcloud
