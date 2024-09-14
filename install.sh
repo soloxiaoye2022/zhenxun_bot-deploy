@@ -645,7 +645,7 @@ Start_zhenxun_bot() {
     check_installed_zhenxun_status
     check_pid_zhenxun
     [[ -n ${PID} ]] && echo -e "${Error} zhenxun_bot 正在运行，请检查 !" && exit 1
-    Start_postgresql
+    #Start_postgresql
     cd ${WORK_DIR}/zhenxun_bot || exit
     nohup poetry run python3 bot.py >> zhenxun_bot.log 2>&1 &
     echo -e "${Info} zhenxun_bot 开始运行..."
