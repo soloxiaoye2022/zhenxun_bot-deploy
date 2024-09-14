@@ -31,15 +31,15 @@ bash -c "$(curl -L gitee.com/mo2/linux/raw/2/2)"
 
 ## 一键脚本
 ```bash
-bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/dev/install.sh)
 ```
 大陆机器：
 ```bash
-bash <(curl -s -L https://mirror.ghproxy.com/raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+bash <(curl -s -L https://mirror.ghproxy.com/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/dev/install.sh)
 ```
 备用脚本：
 ```bash
-bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/dev/install.sh)
 ```
 ## 更新
 

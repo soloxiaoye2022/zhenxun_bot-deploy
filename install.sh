@@ -632,7 +632,7 @@ Set_Port() {
 Set_sql_bind() {
     echo -e "${Info} 开始设置 SQL 连接语句..."
     mkdir ${ZX_DIR}/zhenxun/data/db/
-    cd ${WORK_DIR}/zhenxun_bot && sed -i 's|DB_URL.*|DB_URL = "postgres://zhenxun:zxpassword@localhost:5432/zhenxun"|g' .env.dev
+    cd ${WORK_DIR}/zhenxun_bot && sed -i 's|DB_URL.*|DB_URL = "sqlite:data/db/zhenxun.db"|g' .env.dev
 }
 
 Restart_zx_napcat() {
