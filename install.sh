@@ -843,7 +843,7 @@ View_napcat_webui_info() {
     pathName=$(jq '.pathName' napcat.json | sed 's/\"//g')
     token=$(jq '.token' webui.json | sed 's/\"//g')
     port=$(jq '.port' webui.json | sed 's/\"//g')
-    local_ipv4=$(ip addr show | grep -v docker | grep -v br-.* | grep -v "host lo" | grep 'inet ' | awk '{print $2}' | head -n 1 | cut -d'/' -f1)
+    local_ipv4=$(ip addr show | grep -v docker | grep -v br-.* | grep -v "host lo" | grep 'inet ' | awk '{print $2}' | head -n 1 | cut -d'/' -f1) || local_ipv4=$(ifconfig | grep -v docker | grep -v br-.* | grep -v "host lo" | grep 'inet ' | awk '{print $2}' | head -n 1 | cut -d'/' -f1)
     public_ipv4=$(curl 4.ipw.cn)
     public_ipv6=$(curl 6.ipw.cn)
     echo -e "${Info} 当前bot QQ：${Green_font_prefix}${pathName}${Font_color_suffix}"
@@ -864,6 +864,7 @@ Set_dependency() {
     pip install poetry || pip install poetry --break-system-packages
     poetry env use ${python_v}
     poetry lock || poetry lock --no-update
+    poetry run pip install  nonebot-plugin-uninfo==0.4.1 -i https://pypi.org/simple || poetry run pip install  nonebot-plugin-uninfo==0.4.1 -i https://pypi.org/simple
     poetry install
     poetry run pip install nonebot-plugin-alconna==0.51.1  arclet-alconna==1.8.23 arclet-alconna-tools==0.7.9 
     poetry run pip install jieba matplotlib wordcloud
