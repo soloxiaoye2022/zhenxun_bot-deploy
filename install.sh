@@ -867,7 +867,7 @@ Set_dependency() {
     poetry run pip install  nonebot-plugin-uninfo==0.4.1 -i https://pypi.org/simple || poetry run pip install  nonebot-plugin-uninfo==0.4.1 -i https://pypi.org/simple
     poetry install
     poetry run pip install nonebot-plugin-alconna==0.51.1  arclet-alconna==1.8.23 arclet-alconna-tools==0.7.9 
-    poetry run pip install jieba matplotlib wordcloud
+    poetry run pip install jieba matplotlib wordcloud zhdate
     env_dir=$(poetry env list --full-path | awk '{print $1}')
     index_dir="${env_dir}/lib/${python_v}/site-packages/playwright/driver/package/lib/server/registry/index.js"
     sed -i -e 's/const PLAYWRIGHT_CDN_MIRRORS =.*/const PLAYWRIGHT_CDN_MIRRORS = ["https:\/\/registry.npmmirror.com\/-\/binary\/playwright"];/' $index_dir
