@@ -866,7 +866,7 @@ Set_dependency() {
     poetry lock || poetry lock --no-update
     poetry run pip install  nonebot-plugin-uninfo==0.4.1 -i https://pypi.org/simple || poetry run pip install  nonebot-plugin-uninfo==0.4.1 -i https://pypi.org/simple
     poetry install
-    poetry run pip install nonebot-plugin-alconna==0.51.1  arclet-alconna==1.8.23 arclet-alconna-tools==0.7.9 
+    #poetry run pip install nonebot-plugin-alconna==0.51.1  arclet-alconna==1.8.23 arclet-alconna-tools==0.7.9 
     poetry run pip install jieba matplotlib wordcloud zhdate
     env_dir=$(poetry env list --full-path | awk '{print $1}')
     index_dir="${env_dir}/lib/${python_v}/site-packages/playwright/driver/package/lib/server/registry/index.js"
@@ -1025,8 +1025,8 @@ EOF
 }
 
 create_database() {
-    su postgres <<-EOF
-      echo -e "CREATE USER $databaseuser WITH PASSWORD '$password';\n CREATE DATABASE $databasename OWNER $databaseuser;\n" | psql
+su postgres <<-EOF
+echo -e "CREATE USER $databaseuser WITH PASSWORD '$password';\n CREATE DATABASE $databasename OWNER $databaseuser;\n" | psql
 EOF
     echo -e "${Info} 创建数据库成功\n 连接端口：5432\n 用户名: $databaseuser\n 数据库名: $databasename\n 密码: $password"
     echo -e "数据库连接地址：DB_URL = "postgres://$databaseuser:$password@localhost:5432/$databasename
