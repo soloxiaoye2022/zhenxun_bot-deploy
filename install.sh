@@ -376,7 +376,7 @@ Download_zhenxun_bot() {
     echo -e "${Info} 开始下载最新版 zhenxun_bot ..."
     cd "${TMP_DIR}" || exit 1
     for (( i=1; i<=5; i++ )); do
-      git clone -b dev "${ghproxy}${zhenxun_url}"
+      git clone "${ghproxy}${zhenxun_url}"
       if [ $? = 0 ] ; then
         echo -e "${Info} 开始下载 zhenxun_bot 插件库 ..."
         for (( i=1; i<=5; i++ )); do
