@@ -449,7 +449,7 @@ Install_linuxqq() {
     check_sys
     echo -e "${Info} 开始安装LinuxQQ..."
     for (( i=1; i<=5; i++ )); do
-      qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/0724892e/linuxqq_3.2.12-27597_${arch}.${format}"
+      qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/e379390a/linuxqq_3.2.13-29456_${arch}.${format}"
       sudo wget -O QQ.${format} "${qq_download_url}"
       if [ $? = 0 ] ; then
         sudo apt-get install libnotify4 xdg-utils libsecret-1-0 -y
@@ -868,9 +868,9 @@ Set_dependency() {
     poetry install
     #poetry run pip install nonebot-plugin-alconna==0.51.1  arclet-alconna==1.8.23 arclet-alconna-tools==0.7.9 
     poetry run pip install jieba matplotlib wordcloud zhdate
-    env_dir=$(poetry env list --full-path | awk '{print $1}')
-    index_dir="${env_dir}/lib/${python_v}/site-packages/playwright/driver/package/lib/server/registry/index.js"
-    sed -i -e 's/const PLAYWRIGHT_CDN_MIRRORS =.*/const PLAYWRIGHT_CDN_MIRRORS = ["https:\/\/registry.npmmirror.com\/-\/binary\/playwright"];/' $index_dir
+    #env_dir=$(poetry env list --full-path | awk '{print $1}')
+    #index_dir="${env_dir}/lib/${python_v}/site-packages/playwright/driver/package/lib/server/registry/index.js"
+    #sed -i -e 's/const PLAYWRIGHT_CDN_MIRRORS =.*/const PLAYWRIGHT_CDN_MIRRORS = ["https:\/\/registry.npmmirror.com\/-\/binary\/playwright"];/' $index_dir
     apt remove libfprint-2-2
     apt --fix-broken install
     apt-get install libevent-2.1-7 -y
