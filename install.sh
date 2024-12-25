@@ -236,7 +236,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             python3-pip
         apt-get install libasound2t64 -y
         apt-get install -y libasound2
-        apt remove libfprint-2-2
+        apt remove libfprint-2-2 -y
         apt --fix-broken install
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
         Install_postgresql
@@ -274,7 +274,7 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) \
             python3-pip
         apt-get install libasound2t64 -y
         apt-get install -y libasound2
-        apt remove libfprint-2-2
+        apt remove libfprint-2-2 -y
         apt --fix-broken install
         #${python_v} <(curl -s -L https://bootstrap.pypa.io/get-pip.py) || echo -e "${Tip} pip 安装出错..."
         Install_postgresql
@@ -877,10 +877,9 @@ View_napcat_webui_info() {
     echo -e "${Info} 内网v4：http://${local_ipv4}:${port}/webui/?token=${token}"
     echo -e "${Info} 公网v4：http://${public_ipv4}:${port}/webui/?token=${token}"
     echo -e "${Info} 公网v6：http://[${public_ipv6}]:${port}/webui/?token=${token}"
-    echo -e "${Info} 本机代理地址：https://napcat.152710.xyz/web_login?back=http://127.0.0.1:${port}/webui/?token=${token}"
-    echo -e "${Info} 内网v4代理地址：https://napcat.152710.xyz/web_login?back=http://${local_ipv4}:${port}/webui/?token=${token}"
-    echo -e "${Info} 公网v4代理地址：https://napcat.152710.xyz/web_login?back=http://${public_ipv4}:${port}/webui/?token=${token}"
-    echo -e "${Info} 公网v6代理地址：https://napcat.152710.xyz/web_login?back=http://[${public_ipv6}]:${port}/webui/?token=${token}"
+    echo -e "${Info} 本机代理地址：https://napcat.152710.xyz/web_login?back=http://127.0.0.1:${port}&token=${token}"
+    echo -e "${Info} 内网v4代理地址：https://napcat.152710.xyz/web_login?back=http://${local_ipv4}:${port}&token=${token}"
+    echo -e "${Info} 公网v6代理地址：https://napcat.152710.xyz/web_login?back=http://[${public_ipv6}]:${port}&token=${token}"
     echo "请按任意键返回..."
     read -n 1 -s
     menu_napcat
@@ -900,7 +899,7 @@ Set_dependency() {
     #env_dir=$(poetry env list --full-path | awk '{print $1}')
     #index_dir="${env_dir}/lib/${python_v}/site-packages/playwright/driver/package/lib/server/registry/index.js"
     #sed -i -e 's/const PLAYWRIGHT_CDN_MIRRORS =.*/const PLAYWRIGHT_CDN_MIRRORS = ["https:\/\/registry.npmmirror.com\/-\/binary\/playwright"];/' $index_dir
-    apt remove libfprint-2-2
+    apt remove libfprint-2-2 -y
     apt --fix-broken install
     apt-get install libevent-2.1-7 -y
     poetry run playwright install-deps chromium
