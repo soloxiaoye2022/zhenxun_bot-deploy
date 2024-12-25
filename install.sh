@@ -449,7 +449,7 @@ Install_linuxqq() {
     check_sys
     echo -e "${Info} 开始安装LinuxQQ..."
     for (( i=1; i<=5; i++ )); do
-      qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/e379390a/linuxqq_3.2.13-29927_${arch}.${format}"
+      qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/833d113c/linuxqq_3.2.13-29927_${arch}.${format}"
       sudo wget -O QQ.${format} "${qq_download_url}"
       if [ $? = 0 ] ; then
         sudo apt-get install libnotify4 xdg-utils libsecret-1-0 -y
