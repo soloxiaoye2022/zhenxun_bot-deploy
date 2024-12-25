@@ -879,6 +879,7 @@ View_napcat_webui_info() {
     echo -e "${Info} 公网v6：http://[${public_ipv6}]:${port}/webui/?token=${token}"
     echo -e "${Info} 本机代理地址：https://napcat.152710.xyz/web_login?back=http://127.0.0.1:${port}&token=${token}"
     echo -e "${Info} 内网v4代理地址：https://napcat.152710.xyz/web_login?back=http://${local_ipv4}:${port}&token=${token}"
+    echo -e "${Info} 公网v4代理地址：https://napcat.152710.xyz/web_login?back=http://${public_ipv4}:${port}&token=${token}"
     echo -e "${Info} 公网v6代理地址：https://napcat.152710.xyz/web_login?back=http://[${public_ipv6}]:${port}&token=${token}"
     echo "请按任意键返回..."
     read -n 1 -s
