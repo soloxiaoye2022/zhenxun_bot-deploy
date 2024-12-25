@@ -16,7 +16,7 @@ napcat_DIR="/opt/QQ/resources/app/app_launcher"
 ZX_DIR="${WORK_DIR}/zhenxun_bot/"
 sh_ver="2.0.0"
 mirror_url='"https://pypi.org/simple"'
-musicSignUrl="http://napcat-sign.wumiao.wang:2052/music_sign"
+musicSignUrl="https://llob.linyuchen.net/sign/music" #备用https://ss.xingzhige.com/music_card/card
 ssh_port="8022"
 mix="1024"
 max="49151"
@@ -591,14 +591,13 @@ Set_config_bot() {
         break
       fi
     done
-
-    if [[ ! -e "${napcat_DIR}/napcat/config/onebot11_$bot_qq.json" ]]; then
-      cd ${napcat_DIR}/napcat/config && cp napcat.json napcat_$bot_qq.json && cp onebot11.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在！请检查napcat是否安装正确!"
-    fi
-    cd ${napcat_DIR}/napcat/config && \
-    jq --arg key "pathName" --arg value "$bot_qq" '. += {($key): $value}' napcat.json > napcat.json.tmp && mv napcat.json.tmp napcat.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && \
-    jq ".musicSignUrl = \"$musicSignUrl"\" onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && \
-    jq '.reverseWs.enable = true' onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+    qq_data="{ \"bot_qq\": \"$bot_qq\", \"other_QQ\": [] }"
+    cd ${napcat_DIR}/napcat/config && echo $qq_data | jq > qq_data.json
+    #fi
+    #cd ${napcat_DIR}/napcat/config && \
+    #jq --arg key "pathName" --arg value "$bot_qq" '. += {($key): $value}' napcat.json > napcat.json.tmp && mv napcat.json.tmp QQ.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
+    #jq ".musicSignUrl = \"$musicSignUrl"\" onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && \
+    #jq '.reverseWs.enable = true' onebot11_$bot_qq.json > temp.json && mv temp.json onebot11_$bot_qq.json || echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!"
     echo -e "${Info} 设置成功!Bot QQ: [""${Green_font_prefix}"${bot_qq}"${Font_color_suffix}""]"
     
 }
@@ -608,6 +607,32 @@ Set_config() {
     Set_config_bot
     Set_Port
     Set_postgresql_bind
+    cat > ${napcat_DIR}/napcat/config/onebot11_$bot_qq.json <<-EOF
+{
+  "network": {
+    "httpServers": [],
+    "httpClients": [],
+    "websocketServers": [],
+    "websocketClients": [
+      {
+        "name": "真寻 bot",
+        "enable": false,
+        "url": "ws://127.0.0.1:${Port}/onebot/v11/ws",
+        "messagePostFormat": "array",
+        "reportSelfMessage": true,
+        "reconnectInterval": 5000,
+        "token": "",
+        "debug": true,
+        "heartInterval": 30000,
+        "type": "WebSocket 客户端"
+      }
+    ]
+  },
+  "musicSignUrl": "${musicSignUrl}",
+  "enableLocalFile2Url": true,
+  "parseMultMsg": true
+}
+EOF
     
 }
 
@@ -617,7 +642,7 @@ Set_Port() {
       read -erp "Port:" Port
       [[ -z "${Port}" ]] && Port=""
         if [ "${Port}" -ge ${mix} -a "${Port}" -le ${max} ]; then
-          cd ${napcat_DIR}/napcat/config  && sed -i -e 's/"urls":.*/"urls": ["'"ws:\/\/127.0.0.1:$Port\/onebot\/v11\/ws\/"'"]/' onebot11_$bot_qq.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
+          #cd ${napcat_DIR}/napcat/config  && jq --arg port "$port" '.network.websocketClients [0].url = "ws://127.0.0.1:\($port)/onebot/v11/ws"' onebot11_10253524270.json > temp.json && mv temp.json onebot11_10253524270.json || (echo -e "${Error} 配置文件不存在或者缺失！请检查napcat是否安装正确!" && exit 1)
           cd ${WORK_DIR}/zhenxun_bot && sed -i -e "s/PORT.*/PORT = ${Port}/" .env.dev || echo -e "${Error} 配置文件不存在！请检查zhenxun_bot是否安装正确!"
           echo -e "${Info} 设置成功!端口: [""${Green_font_prefix}"${Port}"${Font_color_suffix}""]"
           break
@@ -673,7 +698,7 @@ Start_napcat() {
     check_installed_napcat_status
     check_pid_napcat
     cd $napcat_DIR/napcat/config/
-    pathName=$(jq '.pathName' napcat.json | sed 's/\"//g')
+    pathName=$(jq '.bot_qq' qq_data.json | sed 's/\"//g')
     [[ -n ${PID} ]] && echo -e "${Error} napcat 正在运行，请检查 !" && exit 1
     cd ${napcat_DIR}/napcat/logs
     nohup xvfb-run -a qq --no-sandbox -q ${pathName} >> napcat_${pathName}.log 2>&1 &
@@ -730,7 +755,7 @@ Restart_napcat() {
 View_napcat_log() {
     check_installed_napcat_status
     cd ${napcat_DIR}/napcat/config
-    pathName=$(jq '.pathName' napcat.json | sed 's/\"//g')
+    pathName=$(jq '.bot_qq' qq_data.json | sed 's/\"//g')
     tail -f -n 100 ${napcat_DIR}/napcat/logs/napcat_${pathName}.log
 }
 
@@ -745,7 +770,7 @@ EOF
 Set_config_napcat() {
     check_installed_napcat_status
     cd ${napcat_DIR}/napcat/config
-    pathName=$(jq '.pathName' napcat.json | sed 's/\"//g')
+    pathName=$(jq '.bot_qq' qq_data.json | sed 's/\"//g')
     vim ${napcat_DIR}/napcat/config/onebot_${pathName}.json
 }
 
@@ -840,7 +865,7 @@ Manual_input_source() {
 View_napcat_webui_info() {
     check_installed_napcat_status
     cd ${napcat_DIR}/napcat/config || exit
-    pathName=$(jq '.pathName' napcat.json | sed 's/\"//g')
+    pathName=$(jq '.bot_qq' qq_data.json | sed 's/\"//g')
     token=$(jq '.token' webui.json | sed 's/\"//g')
     port=$(jq '.port' webui.json | sed 's/\"//g')
     local_ipv4=$(ip addr show | grep -v docker | grep -v br-.* | grep -v "host lo" | grep 'inet ' | awk '{print $2}' | head -n 1 | cut -d'/' -f1) || local_ipv4=$(ifconfig | grep -v docker | grep -v br-.* | grep -v "host lo" | grep 'inet ' | awk '{print $2}' | head -n 1 | cut -d'/' -f1)
@@ -849,9 +874,13 @@ View_napcat_webui_info() {
     echo -e "${Info} 当前bot QQ：${Green_font_prefix}${pathName}${Font_color_suffix}"
     echo -e "${Info} 登录密钥（token）：${Green_font_prefix}${token}${Font_color_suffix}"
     echo -e "${Info} webui地址："
-    echo -e "${Info} 内网v4：http://${local_ipv4}:${port}/webui/login.html"
-    echo -e "${Info} 公网v4：http://${public_ipv4}:${port}/webui/login.html"
-    echo -e "${Info} 公网v6：http://[${public_ipv6}]:${port}/webui/login.html"
+    echo -e "${Info} 内网v4：http://${local_ipv4}:${port}/webui/?token=${token}"
+    echo -e "${Info} 公网v4：http://${public_ipv4}:${port}/webui/?token=${token}"
+    echo -e "${Info} 公网v6：http://[${public_ipv6}]:${port}/webui/?token=${token}"
+    echo -e "${Info} 本机代理地址：https://napcat.152710.xyz/web_login?back=http://127.0.0.1:${port}/webui/?token=${token}"
+    echo -e "${Info} 内网v4代理地址：https://napcat.152710.xyz/web_login?back=http://${local_ipv4}:${port}/webui/?token=${token}"
+    echo -e "${Info} 公网v4代理地址：https://napcat.152710.xyz/web_login?back=http://${public_ipv4}:${port}/webui/?token=${token}"
+    echo -e "${Info} 公网v6代理地址：https://napcat.152710.xyz/web_login?back=http://[${public_ipv6}]:${port}/webui/?token=${token}"
     echo "请按任意键返回..."
     read -n 1 -s
     menu_napcat
