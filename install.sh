@@ -449,9 +449,9 @@ Install_linuxqq() {
     check_sys
     echo -e "${Info} 开始安装LinuxQQ..."
     for (( i=1; i<=5; i++ )); do
-      qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/833d113c/linuxqq_3.2.13-29927_${arch}.${format}"
+      qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/e379390a/linuxqq_3.2.13-29927_${arch}.${format}"
       sudo wget -O QQ.${format} "${qq_download_url}"
-      if [ $? = 0 ] ;
+      if [ $? = 0 ] ; then
         sudo apt-get install libnotify4 xdg-utils libsecret-1-0 -y
         while true; do
           sudo dpkg -i ./QQ.${format}
@@ -463,8 +463,8 @@ Install_linuxqq() {
           else
             echo -e "${Error} 安装LinuxQQ失败，请检查错误。" && exit 1    
           fi
-          break
         done
+        break
       elif [ $i -lt 5 ]; then
         echo -e "${Info} 第${i}次尝试下载LinuxQQ失败，正在重试..."
       else
@@ -530,10 +530,9 @@ Download_napcat() {
 
     sudo chmod -R 777 "${napcat_DIR}/napcat/"
     echo -e "${Info} 正在修补文件..."
-    #sudo mv -f "${napcat_DIR}/index.js" "${napcat_DIR}/index.js.bak"
-    #output_index_js=$(echo -e "const path = require('path');\nconst CurrentPath = path.dirname(__filename)\nconst hasNapcatParam = process.argv.includes('--no-sandbox');\nif (hasNapcatParam) {\n    (async () => {\n        await import(\\\"file://\\\" + path.join(CurrentPath, './napcat/napcat.mjs'));\n    })();\n} else {\n    require('./launcher.node').load('external_index', module);\n}")
-    #sudo bash -c "echo \"$output_index_js\" > \"${napcat_DIR}/index.js\""
-    sudo echo "(async () => {await import('file:///${TARGET_FOLDER}/napcat/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js
+    sudo mv -f "${napcat_DIR}/index.js" "${napcat_DIR}/index.js.bak"
+    output_index_js=$(echo -e "const path = require('path');\nconst CurrentPath = path.dirname(__filename)\nconst hasNapcatParam = process.argv.includes('--no-sandbox');\nif (hasNapcatParam) {\n    (async () => {\n        await import(\\\"file://\\\" + path.join(CurrentPath, './napcat/napcat.mjs'));\n    })();\n} else {\n    require('./launcher.node').load('external_index', module);\n}")
+    sudo bash -c "echo \"$output_index_js\" > \"${napcat_DIR}/index.js\""
 
     if [ $? = 0 ]; then
       echo -e "${Info} NapCatQQ安装成功！"
@@ -542,20 +541,7 @@ Download_napcat() {
       clean
       exit 1
     fi
-    modify_qq_config
     clean
-}
-
-modify_qq_config() {
-    echo -e "${Info} 正在修改QQ启动配置..."
-
-    if sudo jq '.main = "./loadNapCat.js"' /opt/QQ/resources/app/package.json > ./package.json.tmp; then
-        sudo mv ./package.json.tmp /opt/QQ/resources/app/package.json
-        echo -e "${Info} 修改QQ启动配置成功..."
-    else
-        echo -e "${Info} 修改QQ启动配置失败..."
-        exit 1
-    fi
 }
 
 Install_napcat() {
