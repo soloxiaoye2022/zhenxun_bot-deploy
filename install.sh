@@ -463,8 +463,8 @@ Install_linuxqq() {
           else
             echo -e "${Error} 安装LinuxQQ失败，请检查错误。" && exit 1    
           fi
+          break
         done
-        break
       elif [ $i -lt 5 ]; then
         echo -e "${Info} 第${i}次尝试下载LinuxQQ失败，正在重试..."
       else
@@ -530,9 +530,10 @@ Download_napcat() {
 
     sudo chmod -R 777 "${napcat_DIR}/napcat/"
     echo -e "${Info} 正在修补文件..."
-    sudo mv -f "${napcat_DIR}/index.js" "${napcat_DIR}/index.js.bak"
-    output_index_js=$(echo -e "const path = require('path');\nconst CurrentPath = path.dirname(__filename)\nconst hasNapcatParam = process.argv.includes('--no-sandbox');\nif (hasNapcatParam) {\n    (async () => {\n        await import(\\\"file://\\\" + path.join(CurrentPath, './napcat/napcat.mjs'));\n    })();\n} else {\n    require('./launcher.node').load('external_index', module);\n}")
-    sudo bash -c "echo \"$output_index_js\" > \"${napcat_DIR}/index.js\""
+    #sudo mv -f "${napcat_DIR}/index.js" "${napcat_DIR}/index.js.bak"
+    #output_index_js=$(echo -e "const path = require('path');\nconst CurrentPath = path.dirname(__filename)\nconst hasNapcatParam = process.argv.includes('--no-sandbox');\nif (hasNapcatParam) {\n    (async () => {\n        await import(\\\"file://\\\" + path.join(CurrentPath, './napcat/napcat.mjs'));\n    })();\n} else {\n    require('./launcher.node').load('external_index', module);\n}")
+    #sudo bash -c "echo \"$output_index_js\" > \"${napcat_DIR}/index.js\""
+    sudo echo "(async () => {await import('file:///${TARGET_FOLDER}/napcat/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js
 
     if [ $? = 0 ]; then
       echo -e "${Info} NapCatQQ安装成功！"
