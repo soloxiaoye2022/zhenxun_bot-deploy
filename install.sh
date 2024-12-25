@@ -533,7 +533,7 @@ Download_napcat() {
     #sudo mv -f "${napcat_DIR}/index.js" "${napcat_DIR}/index.js.bak"
     #output_index_js=$(echo -e "const path = require('path');\nconst CurrentPath = path.dirname(__filename)\nconst hasNapcatParam = process.argv.includes('--no-sandbox');\nif (hasNapcatParam) {\n    (async () => {\n        await import(\\\"file://\\\" + path.join(CurrentPath, './napcat/napcat.mjs'));\n    })();\n} else {\n    require('./launcher.node').load('external_index', module);\n}")
     #sudo bash -c "echo \"$output_index_js\" > \"${napcat_DIR}/index.js\""
-    sudo echo "(async () => {await import('file:///${TARGET_FOLDER}/napcat/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js
+    sudo echo "(async () => {await import('file:///${napcat_DIR}/napcat/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js
 
     if [ $? = 0 ]; then
       modify_qq_config
@@ -1205,28 +1205,28 @@ menu_postgresql() {
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
   0)
-    Start_postgresql 
+    Start_postgresql && menu_postgresql
     ;;
   1)
-    Restart_postgresql 
+    Restart_postgresql && menu_postgresql
     ;;
   2)
-    Stop_postgresql 
+    Stop_postgresql && menu_postgresql 
     ;;
   3)
-    Install_postgresql 
+    Install_postgresql && menu_postgresql
     ;;
   4)
-    Uninstall_postgresql
+    Uninstall_postgresql && menu_postgresql
     ;;
   5)
     menu_postgresql 
     ;;
   6)
-    Set_dns 
+    Set_dns && menu_postgresql
     ;;
   7)
-    View_postgresql_info 
+    View_postgresql_info && menu_postgresql
     ;;  
   8)
     menu_postgresql 
@@ -1274,22 +1274,22 @@ menu_termux() {
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
   0)
-    Set_dns
+    Set_dns && menu_termux
     ;;
   1)
-    Set_apt_source
+    Set_apt_source  && menu_termux
     ;;
   2)
-    Set_pip_Mirror
+    Set_pip_Mirror  && menu_termux
     ;;
   3)
-    Set_Port
+    Set_Port  && menu_termux
     ;;
   4)
-    check_module
+    check_module  && menu_termux
     ;;
   5)
-    menu_postgresql
+    menu_postgresql 
     ;;
   6)
     menu_napcat
@@ -1336,31 +1336,31 @@ menu_zhenxun() {
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
   0)
-    Update_Shell
+    Update_Shell && menu_zhenxun
     ;;
   1)
     Install_zhenxun_bot
     ;;
   2)
-    Start_zhenxun_bot
+    Start_zhenxun_bot && menu_zhenxun
     ;;
   3)
-    Stop_zhenxun_bot
+    Stop_zhenxun_bot && menu_zhenxun
     ;;
   4)
-    Restart_zhenxun_bot
+    Restart_zhenxun_bot && menu_zhenxun
     ;;
   5)
-    Set_config_admin
+    Set_config_admin && menu_zhenxun
     ;;
   6)
-    Set_config_zhenxun
+    Set_config_zhenxun && menu_zhenxun
     ;;
   7)
-    View_zhenxun_log
+    View_zhenxun_log && menu_zhenxun
     ;;
   8)
-    Uninstall_All
+    Uninstall_All && menu_zhenxun
     ;;
   9)
     menu_termux
