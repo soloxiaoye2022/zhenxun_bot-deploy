@@ -1130,7 +1130,7 @@ if [[ -e "${napcat_DIR}/napcat" ]]; then
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
   0)
-    update_napcat && menu_napcat
+    update_napcat
     ;;
   1)
     Uninstall_napcat && menu_napcat
