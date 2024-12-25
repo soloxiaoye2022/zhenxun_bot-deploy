@@ -451,7 +451,7 @@ Install_linuxqq() {
     for (( i=1; i<=5; i++ )); do
       qq_download_url="https://dldir1.qq.com/qqfile/qq/QQNT/833d113c/linuxqq_3.2.13-29927_${arch}.${format}"
       sudo wget -O QQ.${format} "${qq_download_url}"
-      if [ $? = 0 ] ; then
+      if [ $? = 0 ] ;
         sudo apt-get install libnotify4 xdg-utils libsecret-1-0 -y
         while true; do
           sudo dpkg -i ./QQ.${format}
@@ -541,7 +541,20 @@ Download_napcat() {
       clean
       exit 1
     fi
+    modify_qq_config
     clean
+}
+
+modify_qq_config() {
+    echo -e "${Info} 正在修改QQ启动配置..."
+
+    if sudo jq '.main = "./loadNapCat.js"' /opt/QQ/resources/app/package.json > ./package.json.tmp; then
+        sudo mv ./package.json.tmp /opt/QQ/resources/app/package.json
+        echo -e "${Info} 修改QQ启动配置成功..."
+    else
+        echo -e "${Info} 修改QQ启动配置失败..."
+        exit 1
+    fi
 }
 
 Install_napcat() {
