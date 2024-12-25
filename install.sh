@@ -459,7 +459,7 @@ Install_linuxqq() {
             break
           elif [ $? -ge 0 ]; then
             echo -e "${Info} 安装LinuxQQ失败，正在尝试修复环境..."
-            apt --fix-broken install
+            apt --fix-broken install -y
           else
             echo -e "${Error} 安装LinuxQQ失败，请检查错误。" && exit 1    
           fi
@@ -536,13 +536,13 @@ Download_napcat() {
     sudo echo "(async () => {await import('file:///${TARGET_FOLDER}/napcat/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js
 
     if [ $? = 0 ]; then
+      modify_qq_config
       echo -e "${Info} NapCatQQ安装成功！"
     else
       echo -e "${Error} index.js文件写入失败，请以root身份运行。"
       clean
       exit 1
     fi
-    modify_qq_config
     clean
 }
 
@@ -1130,31 +1130,31 @@ if [[ -e "${napcat_DIR}/napcat" ]]; then
   read -erp " 请输入数字 [0-10]:" num
   case "$num" in
   0)
-    update_napcat
+    update_napcat && menu_napcat
     ;;
   1)
-    Uninstall_napcat
+    Uninstall_napcat && menu_napcat
     ;;
   2)
-    Start_napcat
+    Start_napcat && menu_napcat
     ;;
   3)
-    Stop_napcat
+    Stop_napcat && menu_napcat
     ;;
   4)
-    Restart_napcat
+    Restart_napcat && menu_napcat
     ;;
   5)
     menu_napcat
     ;;
   6)
-    Set_config_napcat
+    Set_config_napcat && menu_napcat
     ;;
   7)
-    View_napcat_log
+    View_napcat_log && menu_napcat
     ;;  
   8)
-    View_napcat_webui_info
+    View_napcat_webui_info && menu_napcat
     ;;
   9)
     menu_termux
