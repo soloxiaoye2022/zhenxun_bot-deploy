@@ -45,6 +45,14 @@ bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/sol
 
 ****
 
+**2025/01/XX**
+
+* 优化Set_dependency函数，删除冗余的poetry lock操作
+* 移除nonebot-plugin-uninfo重复安装步骤
+* 清理已弃用的playwright镜像配置代码
+* 移除系统级依赖安装命令(apt remove/install)
+* 代码结构优化，提升安装效率
+
 **2024/9/14**
 
 * 修改默认数据库为兼容性更好的sqlite
