@@ -1018,9 +1018,39 @@ Set_config_admin() {
     
     # 检查配置文件是否存在
     if [[ ! -f "$env_file" ]]; then
-        echo -e "${Error} 配置文件不存在: $env_file"
-        echo -e "${Info} 请确保zhenxun_bot已正确安装"
-        return 1
+        echo -e "${Warning} 配置文件不存在: $env_file"
+        echo -e "${Info} 尝试创建配置文件..."
+        
+        # 检查 zhenxun_bot 目录是否存在
+        if [[ ! -d "${WORK_DIR}/zhenxun_bot" ]]; then
+            echo -e "${Error} zhenxun_bot 目录不存在，请先安装 zhenxun_bot"
+            return 1
+        fi
+        
+        # 创建基础配置文件
+        cat > "$env_file" << 'EOF'
+# 真寻机器人配置
+HOST=0.0.0.0
+PORT=8080
+SUPERUSERS=[]
+NICKNAME=["真寻"]
+COMMAND_START=[""]
+DB_URL=sqlite:data/db/zhenxun.db
+
+# NapCat 配置
+NAPCAT_HOST=127.0.0.1
+NAPCAT_PORT=3000
+
+# 其他配置
+LOG_LEVEL=INFO
+EOF
+        
+        if [[ $? -ne 0 ]]; then
+            echo -e "${Error} 无法创建配置文件"
+            return 1
+        fi
+        
+        echo -e "${Info} 配置文件已创建: $env_file"
     fi
     
     # 备份原始配置文件
@@ -1173,10 +1203,56 @@ Set_config_bot() {
     
     # 如果配置文件不存在，创建它们
     if [[ ! -f "onebot11_$bot_qq.json" ]]; then
-        if ! cp "napcat.json" "napcat_$bot_qq.json" 2>/dev/null || ! cp "onebot11.json" "onebot11_$bot_qq.json" 2>/dev/null; then
+        echo -e "${Info} 创建NapCat配置文件..."
+        
+        # 创建基础配置文件
+        cat > "onebot11_$bot_qq.json" << EOF
+{
+  "http": {
+    "enable": false,
+    "host": "",
+    "port": 3000,
+    "secret": "",
+    "enableHeart": false,
+    "enablePostUrl": false
+  },
+  "ws": {
+    "enable": false,
+    "host": "",
+    "port": 3000
+  },
+  "reverseWs": {
+    "enable": true,
+    "urls": ["ws://127.0.0.1:8080/onebot/v11/ws"]
+  },
+  "GroupLocalTime": {
+    "Record": false,
+    "RecordList": []
+  },
+  "musicSignUrl": "",
+  "msg": {
+    "ffmpeg": "/usr/bin/ffmpeg",
+    "ffprobe": "/usr/bin/ffprobe"
+  },
+  "httpPort": [
+    443,
+    80,
+    8080,
+    3000
+  ],
+  "httpHosts": [],
+  "enableLocalFile2Url": true,
+  "heartTime": 30000,
+  "token": ""
+}
+EOF
+        
+        if [[ $? -ne 0 ]]; then
             echo -e "${Error} 无法创建配置文件，请检查napcat是否安装正确！"
             return 1
         fi
+        
+        echo -e "${Info} 配置文件已创建: onebot11_$bot_qq.json"
     fi
     
     # 使用原子操作更新配置
@@ -1234,6 +1310,7 @@ Set_Port() {
     
     while [ $attempt -lt $max_attempts ]; do
         echo -e "${Info} 请设置 zhenxun_bot napcat 通信端口 (范围: ${Green_font_prefix}${min_port}-${max_port}${Font_color_suffix})"
+        echo -e "${Info} 推荐使用端口: 8080, 3000, 9145, 9999 等"
         read -erp "Port:" Port
         
         # 输入验证
@@ -1255,24 +1332,44 @@ Set_Port() {
         # 端口范围验证
         if [ "${Port}" -lt ${min_port} ] || [ "${Port}" -gt ${max_port} ]; then
             echo -e "${Error} 端口设置错误，取值范围 [${Green_font_prefix}${min_port}-${max_port}${Font_color_suffix}]"
+            echo -e "${Info} 请输入 ${min_port}-${max_port} 范围内的数字（如：8080, 3000, 9145）"
             ((attempt++))
             echo -e "${Info} 剩余尝试次数: $((max_attempts - attempt))"
             continue
         fi
         
-        # 检查端口是否被占用
-        if command -v netstat &> /dev/null; then
-            if netstat -tuln | grep -q ":${Port} "; then
-                echo -e "${Error} 端口 ${Port} 已被占用"
-                ((attempt++))
-                echo -e "${Info} 剩余尝试次数: $((max_attempts - attempt))"
-                continue
+        # 检查端口是否被占用（简化检查，避免权限问题）
+    if command -v netstat >/dev/null 2>&1; then
+        if netstat -tuln 2>/dev/null | grep -q ":${Port} "; then
+            echo -e "${Error} 端口 ${Port} 已被占用"
+            ((attempt++))
+            echo -e "${Info} 剩余尝试次数: $((max_attempts - attempt))"
+            continue
+        fi
+    elif command -v ss >/dev/null 2>&1; then
+        if ss -tuln 2>/dev/null | grep -q ":${Port} "; then
+            echo -e "${Error} 端口 ${Port} 已被占用"
+            ((attempt++))
+            echo -e "${Info} 剩余尝试次数: $((max_attempts - attempt))"
+            continue
+        fi
+    fi
+        
+        # 获取本地IP地址（修复权限问题）
+        local local_ipv4="127.0.0.1"
+        local local_ipv6=""
+        
+        # 尝试获取IP地址，如果失败则使用默认值
+        if command -v hostname >/dev/null 2>&1; then
+            local ip_output=$(hostname -I 2>/dev/null | awk '{print $1}' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || echo "")
+            if [[ -n "$ip_output" ]]; then
+                local_ipv4="$ip_output"
             fi
         fi
         
-        # 获取本地IP地址
-        local local_ipv4=$(hostname -I | awk '{print $1}' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || echo "127.0.0.1")
-        local local_ipv6=$(ip -6 addr show scope global | grep -oE 'inet6 [0-9a-fA-F:]+' | awk '{print $2}' | head -n1 | cut -d'/' -f1 || echo "")
+        if command -v ip >/dev/null 2>&1; then
+            local_ipv6=$(ip -6 addr show scope global 2>/dev/null | grep -oE 'inet6 [0-9a-fA-F:]+' | awk '{print $2}' | head -n1 | cut -d'/' -f1 || echo "")
+        fi
         
         # 更新 napcat 配置
         local napcat_config="${napcat_DIR}/napcat/config/onebot11_${bot_qq}.json"
@@ -1303,7 +1400,33 @@ Set_Port() {
         
         # 更新 zhenxun_bot 配置
         local zhenxun_env="${WORK_DIR}/zhenxun_bot/.env.dev"
-        if [[ -f "${zhenxun_env}" ]]; then
+        
+        # 如果配置文件不存在，创建基础配置
+        if [[ ! -f "${zhenxun_env}" ]]; then
+            echo -e "${Warning} zhenxun_bot 配置文件不存在，创建基础配置..."
+            cat > "${zhenxun_env}" << EOF
+# 真寻机器人配置
+HOST=0.0.0.0
+PORT=${Port}
+SUPERUSERS=[]
+NICKNAME=["真寻"]
+COMMAND_START=[""]
+DB_URL=sqlite:data/db/zhenxun.db
+
+# NapCat 配置
+NAPCAT_HOST=127.0.0.1
+NAPCAT_PORT=3000
+
+# 其他配置
+LOG_LEVEL=INFO
+EOF
+            if [[ $? -ne 0 ]]; then
+                echo -e "${Error} 无法创建 zhenxun_bot 配置文件"
+                ((attempt++))
+                echo -e "${Info} 剩余尝试次数: $((max_attempts - attempt))"
+                continue
+            fi
+        else
             # 备份原始配置
             cp "${zhenxun_env}" "${zhenxun_env}.bak" 2>/dev/null || true
             
@@ -1321,11 +1444,6 @@ Set_Port() {
             
             # 清理备份
             rm -f "${zhenxun_env}.bak"
-        else
-            echo -e "${Error} zhenxun_bot 配置文件不存在: ${zhenxun_env}"
-            ((attempt++))
-            echo -e "${Info} 剩余尝试次数: $((max_attempts - attempt))"
-            continue
         fi
         
         # 配置验证
@@ -1355,11 +1473,15 @@ Set_sql_bind() {
     echo -e "${Info} 开始设置 SQL 连接语句..."
     
     # 检查并创建数据库目录
-    local db_dir="${ZX_DIR}data/db"
+    local db_dir="${WORK_DIR}/zhenxun_bot/data/db"
     if [[ ! -d "${db_dir}" ]]; then
         if ! mkdir -p "${db_dir}"; then
             echo -e "${Error} 无法创建数据库目录: ${db_dir}"
-            return 1
+            # 尝试使用sudo
+            if ! sudo mkdir -p "${db_dir}"; then
+                echo -e "${Error} 无法创建数据库目录，请检查权限"
+                return 1
+            fi
         fi
         echo -e "${Info} 已创建数据库目录: ${db_dir}"
     fi
@@ -1376,8 +1498,33 @@ Set_sql_bind() {
     
     # 检查环境文件是否存在
     if [[ ! -f "${env_file}" ]]; then
-        echo -e "${Error} 环境配置文件不存在: ${env_file}"
-        return 1
+        echo -e "${Warning} 环境配置文件不存在: ${env_file}"
+        echo -e "${Info} 尝试创建基础环境配置文件..."
+        
+        # 创建基础配置
+        cat > "${env_file}" << EOF
+# 真寻机器人配置
+HOST=0.0.0.0
+PORT=8080
+SUPERUSERS=[]
+NICKNAME=["真寻"]
+COMMAND_START=[""]
+DB_URL=sqlite:data/db/zhenxun.db
+
+# NapCat 配置
+NAPCAT_HOST=127.0.0.1
+NAPCAT_PORT=3000
+
+# 其他配置
+LOG_LEVEL=INFO
+EOF
+        
+        if [[ $? -ne 0 ]]; then
+            echo -e "${Error} 无法创建环境配置文件"
+            return 1
+        fi
+        
+        echo -e "${Info} 环境配置文件已创建: ${env_file}"
     fi
     
     # 备份原始配置
@@ -1385,7 +1532,7 @@ Set_sql_bind() {
     
     while [ $attempt -lt $max_attempts ]; do
         # 更新数据库配置
-        if sed -i -e "s|^DB_URL.*|DB_URL = \"${db_path}\"|g" "${env_file}"; then
+        if sed -i -e "s|^DB_URL.*|DB_URL = \"${db_path}\"|g" "${env_file}" 2>/dev/null; then
             # 验证配置是否更新成功
             if grep -q "DB_URL = \"${db_path}\"" "${env_file}"; then
                 echo -e "${Info} SQL 连接设置成功!"
@@ -1401,6 +1548,15 @@ Set_sql_bind() {
                 fi
                 
                 # 清理备份
+                rm -f "${env_file}.bak"
+                return 0
+            fi
+        else
+            # 如果sed失败，尝试追加配置
+            echo "DB_URL = \"${db_path}\"" >> "${env_file}" 2>/dev/null
+            if grep -q "DB_URL = \"${db_path}\"" "${env_file}"; then
+                echo -e "${Info} SQL 连接设置成功（追加模式）!"
+                echo -e "${Info} 数据库路径: ${Green_font_prefix}${db_path}${Font_color_suffix}"
                 rm -f "${env_file}.bak"
                 return 0
             fi
@@ -1489,9 +1645,21 @@ Start_napcat() {
         }
     fi
     
-    # 获取本机IP地址
-    local local_ipv4=$(hostname -I | awk '{print $1}' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || echo "127.0.0.1")
-    local local_ipv6=$(ip -6 addr show scope global 2>/dev/null | grep -oE 'inet6 [0-9a-fA-F:]+' | awk '{print $2}' | head -n1 | cut -d'/' -f1 || echo "")
+    # 获取本机IP地址（兼容Windows和Linux）
+    local local_ipv4="127.0.0.1"
+    local local_ipv6=""
+    
+    # 尝试获取IPv4地址
+    if command -v hostname >/dev/null 2>&1; then
+        local_ipv4=$(hostname -I 2>/dev/null | awk '{print $1}' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || echo "127.0.0.1")
+    elif command -v ip >/dev/null 2>&1; then
+        local_ipv4=$(ip route get 1 2>/dev/null | awk '{print $7; exit}' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || echo "127.0.0.1")
+    fi
+    
+    # 尝试获取IPv6地址
+    if command -v ip >/dev/null 2>&1; then
+        local_ipv6=$(ip -6 addr show scope global 2>/dev/null | grep -oE 'inet6 [0-9a-fA-F:]+' | awk '{print $2}' | head -n1 | cut -d'/' -f1 || echo "")
+    fi
     
     # 检查并配置 OneBot 配置
     local onebot_config="${napcat_DIR}/napcat/config/onebot11_${pathName}.json"
@@ -1522,15 +1690,36 @@ Start_napcat() {
     local pid_file="${napcat_DIR}/napcat/napcat.pid"
     
     # 清理旧的日志文件（如果太大）
-    if [[ -f "${log_file}" ]] && [[ $(stat -f%z "${log_file}" 2>/dev/null || stat -c%s "${log_file}" 2>/dev/null || echo 0) -gt 10485760 ]]; then
-        mv "${log_file}" "${log_file}.old" 2>/dev/null || true
+    local log_size=0
+    if [[ -f "${log_file}" ]]; then
+        if command -v stat >/dev/null 2>&1; then
+            log_size=$(stat -f%z "${log_file}" 2>/dev/null || stat -c%s "${log_file}" 2>/dev/null || echo 0)
+        elif command -v wc >/dev/null 2>&1; then
+            log_size=$(wc -c < "${log_file}" 2>/dev/null || echo 0)
+        fi
+        
+        if [[ ${log_size} -gt 10485760 ]]; then
+            mv "${log_file}" "${log_file}.old" 2>/dev/null || true
+        fi
     fi
     
     echo -e "${Info} 正在启动 napcat (QQ: ${Green_font_prefix}${pathName}${Font_color_suffix})..."
     echo -e "${Info} 日志文件: ${log_file}"
     
-    # 启动命令
-    local start_cmd="xvfb-run -a qq --no-sandbox -q ${pathName}"
+    # 启动命令（兼容Windows和Linux）
+    local start_cmd=""
+    
+    # 检测操作系统
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux系统
+        start_cmd="xvfb-run -a qq --no-sandbox -q ${pathName}"
+    elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+        # Windows系统（通过Git Bash或Cygwin）
+        start_cmd="qq --no-sandbox -q ${pathName}"
+    else
+        # 其他系统，使用基础命令
+        start_cmd="qq -q ${pathName}"
+    fi
     
     # 启动并记录PID
     nohup ${start_cmd} >> "${log_file}" 2>&1 &
