@@ -892,8 +892,10 @@ Download_napcat() {
     
     # 创建目录结构
     if [ ! -d "${napcat_DIR}/napcat" ]; then
+      echo -e "${Info} 创建NapCat目录结构..."
       sudo mkdir -p "${napcat_DIR}/napcat/"
       sudo mkdir -p "${napcat_DIR}/napcat/logs"
+      sudo mkdir -p "${napcat_DIR}/napcat/config"
     fi
 
     echo -e "${Info} 正在移动文件..."
@@ -911,6 +913,13 @@ Download_napcat() {
     
     # 使用新的修补方法，创建loadNapCat.js文件
     local load_napcat_content="(async () => {await import('file://${napcat_DIR}/napcat/napcat.mjs');})();"
+    
+    # 检查napcat_DIR是否存在
+    if [ ! -d "${napcat_DIR}" ]; then
+      echo -e "${Info} 创建NapCat目录: ${napcat_DIR}"
+      sudo mkdir -p "${napcat_DIR}"
+    fi
+    
     sudo bash -c "echo \"${load_napcat_content}\" > \"${napcat_DIR}/loadNapCat.js\""
     
     if [ $? -ne 0 ]; then
@@ -922,6 +931,9 @@ Download_napcat() {
     # 修改QQ启动配置
     echo -e "${Info} 正在修改QQ启动配置..."
     local qq_package_json="${napcat_DIR}/package.json"
+    local qq_main_package_json="/opt/QQ/resources/app/package.json"
+    
+    # 检查NapCat目录下的package.json
     if [ -f "${qq_package_json}" ]; then
       sudo jq '.main = "./loadNapCat.js"' "${qq_package_json}" > "${qq_package_json}.tmp" && \
       sudo mv "${qq_package_json}.tmp" "${qq_package_json}" || {
@@ -930,8 +942,19 @@ Download_napcat() {
         exit 1
       }
       echo -e "${Info} 修改QQ启动配置成功..."
+    # 检查QQ主目录下的package.json
+    elif [ -f "${qq_main_package_json}" ]; then
+      sudo jq '.main = "./app_launcher/loadNapCat.js"' "${qq_main_package_json}" > "${qq_main_package_json}.tmp" && \
+      sudo mv "${qq_main_package_json}.tmp" "${qq_main_package_json}" || {
+        echo -e "${Error} QQ主配置文件修改失败..."
+        clean
+        exit 1
+      }
+      echo -e "${Info} 修改QQ主配置文件成功..."
     else
       echo -e "${Error} 未找到QQ package.json文件，配置修改失败..."
+      echo -e "${Info} 已安装的QQ文件结构:"
+      find /opt/QQ -name "package.json" -type f 2>/dev/null | head -10
       clean
       exit 1
     fi

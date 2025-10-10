@@ -45,7 +45,7 @@ bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/sol
 
 ****
 
-**2025/01/XX**
+**2025/01/09**
 
 * 优化Set_dependency函数，删除冗余的poetry lock操作
 * 移除nonebot-plugin-uninfo重复安装步骤
