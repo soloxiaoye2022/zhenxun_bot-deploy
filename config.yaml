@@ -1,3 +1,4 @@
+# Historical sample only. Official runtime config is generated at data/config.yaml after the first uv run zx.
 group_manager:
   # group_manager
   # DEFAULT_GROUP_LEVEL: 默认群权限

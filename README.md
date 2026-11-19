@@ -1,110 +1,108 @@
 # zhenxun_bot-deploy
- 真寻bot一键部署脚本termux版
-## 食用方法  
-此版本可以在服务器、虚拟机以及使用tmoe安装的proot容器(proot容器只支持arm64架构的debian12和Ubuntu22.04，暂未支持chroot容器和docker容器）部署真寻。  
-proot容器相关软件及教程:
-[UTermux/ZeroTermux/TermuxWatch下载站](https://blog.utermux.dev/ut/download.html)  
-[zerotermux下载地址](https://d.icdown.club/repository/main/ZeroTermux/ZeroTermux%20-0.118.21.apk)  
-[视频教程和软件下载地址](http://zf.xiaoye.ink:8090/1/%E8%A7%86%E9%A2%91)  
-手机部署真寻交流群:948192110[termux-arm64-真寻交流群](https://jq.qq.com/?_wv=1027&k=rMWrhoIt)
+
+真寻 bot 一键部署脚本（Termux / Linux）
+
+对齐官方文档：
+
+- 真寻安装：https://zhenxun-org.github.io/zhenxun_bot/install/zhenxun/
+- 真寻 QQ 协议端：https://zhenxun-org.github.io/zhenxun_bot/install/install-qq
+- LLBot（原 LLOneBot）：https://github.com/LuckyLilliaDev/LuckyLilliaBot
+
+## 食用方法
+
+此版本可以在服务器、虚拟机以及使用 tmoe 安装的 proot 容器（proot 容器只支持 arm64 架构的 Debian12 和 Ubuntu22.04）部署真寻。菜单为 tmoe 风格的 whiptail/dialog；无 TUI 时自动回退数字菜单。
+
+手机部署真寻交流群: 948192110
 
 ## 系统要求
 
-*支持的发行版：
+支持的发行版：
 
-Debian11/12
+- Debian11/12
+- Ubuntu20/22/24
 
-Ubuntu20/22/24
+其他发行版请自行安装 Python 3.10+。最低要求 Ubuntu20 / Debian11。
 
-*其他发行版自行安装python3.10+
+真寻官方要求：
 
-*最低要求 Ubuntu20/Debian11  其他发行版自测
+- Python >= 3.10（整合包建议 >= 3.11）
+- 包管理：`uv`（替代 poetry / pip）
+- 默认端口：`8080`
+- 默认数据库：Sqlite（`DB_URL = "sqlite:data/db/zhenxun.db"`）
+- `data/config.yaml` 需启动一次 Bot 后生成
+- 插件已迁出本体，启动后通过插件商店安装
 
-**在termux部署真寻建议使用tmoe脚本安装proot容器，chroot容器或将在下个版本支持。使用其他方式安装的容器自行测试。
+协议端覆盖范围（没有一家能做到 Linux 全架构原生）：
 
-tmoe脚本：
+- 本脚本默认：LLBot CLI，官方产物仅 `linux-x64` / `linux-arm64`
+- 手机 Termux：走 tmoe/proot 的 Debian12 或 Ubuntu22.04 arm64，再装 LLBot linux-arm64
+- NapCat-Installer / napcat-linux-installer 已 404；NapCatQQ 主仓仅 Ending README
+- Lagrange.Core V1 OneBot 已 sunset；V2 走 Milky，不是真寻默认的 OneBot 11
+
+## 官方手动流程（脚本内部同样按此执行）
+
 ```bash
-
-bash -c "$(curl -L gitee.com/mo2/linux/raw/2/2)"
-
+git clone https://github.com/zhenxun-org/zhenxun_bot.git
+cd zhenxun_bot
+pip install uv
+uv sync
+uv run zx
 ```
 
+LLBot Linux CLI（安装到 `/root/LLBot`）：
+
+```bash
+# x64
+wget https://github.com/LuckyLilliaDev/LuckyLilliaBot/releases/latest/download/LuckyLillia-CLI-linux-x64.zip
+# arm64
+wget https://github.com/LuckyLilliaDev/LuckyLilliaBot/releases/latest/download/LuckyLillia-CLI-linux-arm64.zip
+unzip LuckyLillia-CLI-linux-*.zip -d /root/LLBot
+chmod +x /root/LLBot/start.sh /root/LLBot/llbot
+./start.sh
+```
+
+反向 WS 地址：`ws://127.0.0.1:8080/onebot/v11/ws`
+
+LLBot WebUI 默认：`http://127.0.0.1:3080`
+
 ## 一键脚本
+
 ```bash
 bash <(curl -s -L https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
 ```
+
 大陆机器：
+
 ```bash
-bash <(curl -s -L https://mirror.ghproxy.com/raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+bash <(curl -s -L https://ghfast.top/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
 ```
+
 备用脚本：
+
 ```bash
 bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
 ```
+
+tmoe 脚本：
+
+```bash
+bash -c "$(curl -L gitee.com/mo2/linux/raw/2/2)"
+```
+
 ## 更新
 
-****
+**2026/11/18**
 
-**2024/9/14**
-
-* 添加playwright镜像加速
-
-**2024/9/11**
-
-* 优化napcat安装流程
+- 对齐真寻官方 uv 部署：`git clone zhenxun-org/zhenxun_bot` → `pip install uv` → `uv sync` → `uv run zx`
+- 默认端口改为 8080，默认数据库改为 Sqlite
+- 协议端改为 LLBot CLI（LuckyLilliaBot，原 LLOneBot）：linux-x64 / linux-arm64 zip + `start.sh`
+- NapCat-Installer 已 404，不再作为一键安装入口
+- 插件不再随脚本拷贝进本体，启动后走插件商店
+- `config.yaml` 仅作历史参考；运行时配置在 `data/config.yaml`
+- 菜单改为 tmoe 风格：优先 `whiptail`/`dialog`，无 TUI 时回退 echo/read；`ZX_NO_TUI=1` 强制回退
+- 砍掉源码编译 Python / 旧 glibc 路径；Debian <11、Ubuntu <20 直接退出
+- 最低要求仍是 Debian11/12、Ubuntu20/22/24，架构仅 linux-x64 / linux-arm64
 
 **2024/9/1**
 
-* 弃用[Mrs4s / go-cqhttp](https://github.com/Mrs4s/go-cqhttp)，更换为[Napcat](https://github.com/NapNeko/NapCatQQ)，详见[#2471](https://github.com/Mrs4s/go-cqhttp/issues/2471)
-* 重构部分代码，优化安装体验
-
-**2023/2/11**
-
-* 新增go-cqhttp密码登陆选项[#2](https://github.com/soloxiaoye2022/zhenxun_bot-deploy/issues/2)
-
-**2022/9/7**
-
-* 新增apt换源功能
-
-**2022/8/3**
-
-* 新增一键检测安装依赖功能
-
-**2022/7/16**
-
-* 优化poetry下载依赖的速度
-
-**2022/7/3**
-
-* 修复pgsql数据库安装问题
-
-**2022/7/2**
-
-* 修改安装目录为/root 
-* 添加脚本升级链接
-* 修改dns，解决本地dns无法访问api.github.com问题
-* 支持proot容器安装ssh服务
-
-**2022/6/11**
-
-* 添加对新版虚拟环境的支持
-* 修改脚本为仅支持在手机运行termux内的proot容器运行的Ubuntu20.04/dldebian11系统使用
-
-****以下更新内容为原作者*****
-
-**2022/05/21**
-
-* 修复bug [#15](https://github.com/zhenxun-org/zhenxun_bot-deploy/issues/15)
-
-**2022/05/20**
-
-* 更改监听端口为14514
-* 添加卸载二次验证 [#12](https://github.com/zhenxun-org/zhenxun_bot-deploy/issues/12)
-
-**2022/05/18** [v1.0.4]
-
-* 添加切换git源功能
-* 添加卸载功能
-* 显示安装时长
-* 修改pip源使用方式
-* 修改安装目录为/home
+- 弃用 [Mrs4s / go-cqhttp](https://github.com/Mrs4s/go-cqhttp)，更换为 [NapCat](https://github.com/NapNeko/NapCatQQ)
