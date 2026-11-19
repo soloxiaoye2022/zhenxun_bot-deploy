@@ -63,6 +63,9 @@ REQUIRED_FUNCTIONS = [
     "install_tui_pkg",
     "check_supported_os",
     "main",
+    "save_proxy_config",
+    "measure_proxy",
+    "select_ghproxy_manual",
 ]
 
 
@@ -106,12 +109,37 @@ class TestProxyArray:
     def test_proxy_hosts(self, install_sh):
         proxies = parse_proxy_array(install_sh)
         assert proxies == [
+            "https://gh-proxy.org/",
+            "https://ghproxy.cfd/",
+            "https://gitproxy.click/",
+            "https://gh-proxy.net/",
+            "https://ghproxy.net/",
             "https://ghfast.top/",
-            "https://github.moeyy.xyz/",
-            "https://gh-proxy.com/",
-            "https://mirror.ghproxy.com/",
         ]
         assert all(item.startswith("https://") and item.endswith("/") for item in proxies)
+
+    def test_dead_mirrors_removed(self, install_sh):
+        proxies = parse_proxy_array(install_sh)
+        for dead in ("https://github.moeyy.xyz/", "https://mirror.ghproxy.com/"):
+            assert dead not in proxies
+
+    def test_proxy_persistence(self, install_sh):
+        assert "PROXY_CACHE" in install_sh
+        assert "/root/.zhenxun_deploy" in install_sh
+        assert "save_proxy_config" in install_sh
+        assert "measure_proxy" in install_sh
+        assert "select_ghproxy_manual" in install_sh
+
+    def test_auto_selects_fastest(self, install_sh):
+        block = re.search(r"^network_test\(\) \{.*?\n\}", install_sh, re.S | re.M).group(0)
+        assert "best_time" in block
+        assert "已选择最快镜像" in block
+
+    def test_proxy_modes_available(self, install_sh):
+        block = re.search(r"^Set_ghproxy\(\) \{.*?\n\}", install_sh, re.S | re.M).group(0)
+        assert "自动测速" in block
+        assert "手动选择" in block
+        assert "不使用镜像" in block
 
 
 class TestShellFunctions:
@@ -201,6 +229,25 @@ class TestMenus:
         cases = parse_menu_cases(install_sh, "menu_termux")
         assert cases == [str(i) for i in range(8)]
 
+    def test_menu_hint_ranges_match_cases(self, install_sh):
+        for menu, top in (
+            ("menu_napcat", 11),
+            ("menu_postgresql", 11),
+            ("menu_termux", 7),
+            ("menu_zhenxun", 11),
+        ):
+            block = re.search(rf"^{menu}\(\) \{{.*?\n\}}", install_sh, re.S | re.M).group(0)
+            cases = parse_menu_cases(install_sh, menu)
+            assert cases == [str(i) for i in range(top + 1)], menu
+            assert f"[0-{top}]" in block, menu
+            assert "[0-10]" not in block or top == 10, menu
+
+    def test_menu_labels_consistent(self, install_sh):
+        assert "切换为 termux 菜单" not in install_sh
+        for menu in ("menu_napcat", "menu_postgresql", "menu_termux", "menu_zhenxun"):
+            block = re.search(rf"^{menu}\(\) \{{.*?\n\}}", install_sh, re.S | re.M).group(0)
+            assert "系统工具" in block or "termux" in block, menu
+
     def test_default_entry_is_menu_zhenxun(self, install_sh):
         assert "menu_zhenxun" in install_sh
         assert "main() {" in install_sh
@@ -260,3 +307,45 @@ class TestRetryLoops:
     def test_download_retries_five_times(self, install_sh):
         matches = re.findall(r"for \(\( i=1; i<=5; i\+\+ \)\); do", install_sh)
         assert len(matches) >= 2
+
+
+class TestDependencyAudit:
+    def test_no_unused_xvfb(self, install_sh):
+        block = re.search(r"^Installation_dependency\(\) \{.*?\n\}", install_sh, re.S | re.M).group(0)
+        assert " xvfb" not in block
+        assert "Xvfb" not in block
+
+    def test_no_duplicate_python_install_calls(self, install_sh):
+        block = re.search(r"^Installation_dependency\(\) \{.*?\n\}", install_sh, re.S | re.M).group(0)
+        assert block.count("apt-get install -y python3 python3-pip") == 1
+
+    def test_libasound_probe(self, install_sh):
+        assert "apt-cache show libasound2t64" in install_sh
+        assert "libasound2t64" in install_sh
+        assert "apt-get install -y libasound2 ||" in install_sh
+
+    def test_fonts_installed_individually(self, install_sh):
+        assert "for f in ttf-wqy-zenhei ttf-wqy-microhei" in install_sh
+
+    def test_centos_package_names(self, install_sh):
+        block = re.search(r"^Installation_dependency\(\) \{.*?\n\}", install_sh, re.S | re.M).group(0)
+        assert "mkfontscale" not in block
+        assert "xorg-x11-server-Xvfb" not in block
+        assert "python3" in block
+
+
+class TestInstallTailIsNonBlocking:
+    def test_install_zhenxun_does_not_tail_logs(self, install_sh):
+        block = re.search(r"^Install_zhenxun_bot\(\) \{.*?\n\}", install_sh, re.S | re.M).group(0)
+        assert "View_napcat_log" not in block
+        assert "tail -f" not in block
+        assert "返回主菜单" in block
+
+    def test_log_paths_printed(self, install_sh):
+        assert "${LLBOT_HOME}/logs/llbot.log" in install_sh
+        assert "${WORK_DIR}/zhenxun_bot/zhenxun_bot.log" in install_sh
+
+    def test_webui_info_uses_enter_prompt(self, install_sh):
+        block = re.search(r"^View_napcat_webui_info\(\) \{.*?\n\}", install_sh, re.S | re.M).group(0)
+        assert "press_enter_to_return" in block
+        assert "read -n 1 -s" not in block

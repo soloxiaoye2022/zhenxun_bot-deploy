@@ -80,7 +80,17 @@ bash <(curl -s -L https://ghfast.top/https://raw.githubusercontent.com/soloxiaoy
 备用脚本：
 
 ```bash
-bash <(curl -s -L https://github.moeyy.xyz/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+bash <(curl -s -L https://gh-proxy.org/https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh)
+```
+
+## GitHub 镜像
+
+脚本首次安装时会测速并自动选择最快的 GitHub 镜像，也支持手动指定或直连。选择结果保存到 `/root/.zhenxun_deploy/proxy.conf`，之后自动复用。删除该文件即可重新测速。
+
+清除已保存的镜像配置：
+
+```bash
+rm -f /root/.zhenxun_deploy/proxy.conf
 ```
 
 tmoe 脚本：
@@ -102,6 +112,10 @@ bash -c "$(curl -L gitee.com/mo2/linux/raw/2/2)"
 - 菜单改为 tmoe 风格：优先 `whiptail`/`dialog`，无 TUI 时回退 echo/read；`ZX_NO_TUI=1` 强制回退
 - 砍掉源码编译 Python / 旧 glibc 路径；Debian <11、Ubuntu <20 直接退出
 - 最低要求仍是 Debian11/12、Ubuntu20/22/24，架构仅 linux-x64 / linux-arm64
+- TUI 组件缺失时会自动安装，失败则明确提示原因和手动安装命令，不再静默降级
+- GitHub 镜像改为测速选优：6 个候选自动测速取最快，也支持手动指定或直连；结果持久化到 `/root/.zhenxun_deploy/proxy.conf`
+- 移除失效镜像 `github.moeyy.xyz`、`mirror.ghproxy.com`；新增 `gh-proxy.org`、`ghproxy.cfd`、`gh-proxy.net`、`ghproxy.net`
+- 依赖清理：去掉未使用的 `xvfb`，字体按发行版逐个尝试，`libasound2`/`libasound2t64` 自动探测，修正 CentOS 包名
 
 **2024/9/1**
 

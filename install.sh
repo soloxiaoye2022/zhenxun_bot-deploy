@@ -4,8 +4,10 @@ export PATH
 
 update_shell_url="https://raw.githubusercontent.com/soloxiaoye2022/zhenxun_bot-deploy/main/install.sh"
 zhenxun_url="https://github.com/zhenxun-org/zhenxun_bot.git"
-proxy_arr=("https://ghfast.top/" "https://github.moeyy.xyz/" "https://gh-proxy.com/" "https://mirror.ghproxy.com/")
+proxy_arr=("https://gh-proxy.org/" "https://ghproxy.cfd/" "https://gitproxy.click/" "https://gh-proxy.net/" "https://ghproxy.net/" "https://ghfast.top/")
 check_url="https://raw.githubusercontent.com/LuckyLilliaDev/LuckyLilliaBot/main/README.md"
+CONF_DIR="/root/.zhenxun_deploy"
+PROXY_CACHE="${CONF_DIR}/proxy.conf"
 llbot_repo="https://github.com/LuckyLilliaDev/LuckyLilliaBot"
 zhenxun_bot_plugins_url="https://github.com/zhenxun-org/zhenxun_bot_plugins"
 llbot_cli_x64="LuckyLillia-CLI-linux-x64.zip"
@@ -88,10 +90,11 @@ press_enter_to_return() {
 }
 
 install_tui_pkg() {
-	if command -v whiptail >/dev/null 2>&1 || command -v dialog >/dev/null 2>&1; then
-		ensure_tui
+	ensure_tui
+	if [[ -n "${TUI_BIN}" ]]; then
 		return 0
 	fi
+	echo -e "${Info} 未检测到 whiptail/dialog，尝试自动安装 TUI 组件..."
 	if command -v apt-get >/dev/null 2>&1; then
 		DEBIAN_FRONTEND=noninteractive apt-get update -y >/dev/null 2>&1 || true
 		DEBIAN_FRONTEND=noninteractive apt-get install -y whiptail >/dev/null 2>&1 || DEBIAN_FRONTEND=noninteractive apt-get install -y dialog >/dev/null 2>&1 || true
@@ -101,6 +104,22 @@ install_tui_pkg() {
 		pacman -Sy --noconfirm libnewt >/dev/null 2>&1 || true
 	fi
 	ensure_tui
+	if [[ -n "${TUI_BIN}" ]]; then
+		echo -e "${Info} TUI 组件已就绪：${TUI_BIN}"
+		return 0
+	fi
+	echo -e "${Tip} 图形菜单不可用，已回退为数字菜单。"
+	if command -v apt-get >/dev/null 2>&1; then
+		echo -e "${Tip} 手动安装：apt-get install -y whiptail"
+	elif command -v yum >/dev/null 2>&1; then
+		echo -e "${Tip} 手动安装：yum install -y newt"
+	elif command -v pacman >/dev/null 2>&1; then
+		echo -e "${Tip} 手动安装：pacman -S libnewt"
+	fi
+	if [[ ! -t 0 || ! -t 1 ]]; then
+		echo -e "${Tip} 当前不是交互式终端，图形菜单本身也无法显示。"
+	fi
+	return 1
 }
 
 check_root(){
@@ -215,42 +234,141 @@ Set_pip_Mirror() {
 }
 
 Set_ghproxy() {
-  if tui_available; then
-    if tui_yesno "GitHub 代理" "是否使用 ghproxy 代理 git 相关下载？\n中国大陆建议使用"; then
-      ghproxy_check="y"
-    else
-      ghproxy_check="n"
+  if [[ -f "${PROXY_CACHE}" ]]; then
+    # shellcheck disable=SC1090
+    source "${PROXY_CACHE}" 2>/dev/null || true
+    if [[ -n "${ghproxy:-}" ]]; then
+      echo -e "${Info} 使用已保存的 GitHub 镜像：${ghproxy}"
+      return 0
     fi
-  else
-    echo -e "${Info} 是否使用 ghproxy 代理git相关的下载？(中国大陆建议使用)"
-    read -erp "请选择 [y/n], 默认为 y:" ghproxy_check
   fi
-  if [[ -z "${ghproxy_check}" ]];then
-    network_test
-  elif [[ ${ghproxy_check} == 'n' ]];then
-    ghproxy=""
-    echo -e "${Info} 代理已关闭，将直接连接GitHub..."
-  elif [[ ${ghproxy_check} == 'y' ]];then
-    network_test
+  local mode="auto"
+  if tui_available; then
+    mode=$(tui_menu "GitHub 镜像" "检测到国内网络时可加速 GitHub 下载\n请选择镜像策略" \
+      "auto" "自动测速并选择最快" \
+      "manual" "手动选择镜像" \
+      "off" "不使用镜像（直连 GitHub）") || mode="auto"
+  else
+    echo -e "${Info} GitHub 镜像策略："
+    echo -e "  ${Green_font_prefix}1.${Font_color_suffix} 自动测速并选择最快 (默认)"
+    echo -e "  ${Green_font_prefix}2.${Font_color_suffix} 手动选择镜像"
+    echo -e "  ${Green_font_prefix}3.${Font_color_suffix} 不使用镜像"
+    read -erp "请输入数字 [1-3], 默认为 1:" proxy_mode
+    case "${proxy_mode}" in
+      2) mode="manual" ;;
+      3) mode="off" ;;
+      *) mode="auto" ;;
+    esac
+  fi
+  case "${mode}" in
+    off)
+      ghproxy=""
+      save_proxy_config ""
+      echo -e "${Info} 已关闭镜像，将直接连接 GitHub。"
+      ;;
+    manual)
+      select_ghproxy_manual
+      ;;
+    *)
+      network_test
+      ;;
+  esac
+}
+
+save_proxy_config() {
+  mkdir -p "${CONF_DIR}" 2>/dev/null || true
+  if [[ -n "$1" ]]; then
+    printf 'ghproxy=%q\n' "$1" > "${PROXY_CACHE}" 2>/dev/null || true
+  else
+    printf 'ghproxy=""\n' > "${PROXY_CACHE}" 2>/dev/null || true
+  fi
+}
+
+measure_proxy() {
+  local proxy="$1" status elapsed
+  local result
+  result=$(curl -o /dev/null -s -L -w "%{http_code} %{time_total}" \
+    --connect-timeout 4 --max-time 10 "${proxy}${check_url}" 2>/dev/null)
+  status="${result%% *}"
+  elapsed="${result##* }"
+  if [[ "${status}" == "200" || "${status}" == "206" ]]; then
+    echo "${elapsed}"
   fi
 }
 
 network_test() {
-    found=0
-    for proxy in "${proxy_arr[@]}"; do
-      status=$(curl -o /dev/null -s -w "%{http_code}" "$proxy/$check_url")
-      if [ $status -eq 200 ]; then
-        found=1
-        ghproxy="$proxy"
-        echo -e "${Info} 将使用代理：$proxy"
-        break
+  echo -e "${Info} 正在测速 ${#proxy_arr[@]} 个 GitHub 镜像..."
+  local best="" best_time=""
+  local -a alive=()
+  local p t
+  for p in "${proxy_arr[@]}"; do
+    t=$(measure_proxy "$p")
+    if [[ -n "${t}" ]]; then
+      alive+=("${p}")
+      printf "  %-30s %ss\n" "$p" "$t"
+      if [[ -z "${best_time}" ]] || awk "BEGIN{exit !(${t} < ${best_time})}"; then
+        best="$p"
+        best_time="$t"
       fi
-    done
-
-    if [ $found -eq 0 ]; then
-      echo -e "${Error} 无法连接到GitHub，请检查网络。"
-      exit 1
+    else
+      printf "  %-30s %s\n" "$p" "不可用"
     fi
+  done
+  if [[ -z "${best}" ]]; then
+    echo -e "${Error} 所有 GitHub 镜像均不可用。"
+    echo -e "${Tip} 可稍后重试，或在菜单中选择直连 GitHub。"
+    ghproxy=""
+    save_proxy_config ""
+    return 1
+  fi
+  ghproxy="${best}"
+  save_proxy_config "${best}"
+  echo -e "${Info} 已选择最快镜像：${best} (${best_time}s)"
+  echo -e "${Info} 配置已保存到 ${PROXY_CACHE}"
+}
+
+select_ghproxy_manual() {
+  local choice=""
+  if tui_available; then
+    local -a items=()
+    local idx=1 p
+    for p in "${proxy_arr[@]}"; do
+      items+=("${idx}" "${p}")
+      idx=$((idx + 1))
+    done
+    items+=("0" "直连 GitHub（不使用镜像）")
+    choice=$(tui_menu "选择 GitHub 镜像" "选择后会自动测速确认可用性" "${items[@]}") || choice=""
+  else
+    echo -e "${Info} 可用镜像列表："
+    local idx=1 p
+    for p in "${proxy_arr[@]}"; do
+      echo -e "  ${Green_font_prefix}${idx}.${Font_color_suffix} ${p}"
+      idx=$((idx + 1))
+    done
+    echo -e "  ${Green_font_prefix}0.${Font_color_suffix} 直连 GitHub"
+    read -erp "请输入编号:" choice
+  fi
+  if [[ "${choice}" == "0" ]]; then
+    ghproxy=""
+    save_proxy_config ""
+    echo -e "${Info} 已选择直连 GitHub。"
+    return 0
+  fi
+  if [[ "${choice}" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#proxy_arr[@]} )); then
+    local picked="${proxy_arr[$((choice - 1))]}"
+    local t
+    t=$(measure_proxy "${picked}")
+    if [[ -n "${t}" ]]; then
+      ghproxy="${picked}"
+      save_proxy_config "${picked}"
+      echo -e "${Info} 已选择镜像：${picked} (${t}s)"
+    else
+      echo -e "${Error} 该镜像当前不可用，回退到自动测速。"
+      network_test
+    fi
+  else
+    network_test
+  fi
 }
 
 
@@ -259,38 +377,38 @@ Installation_dependency() {
     export DEBIAN_FRONTEND=noninteractive
     if [[ ${release} == "centos" ]]; then
         yum -y update
-        yum install -y git fontconfig mkfontscale epel-release wget vim zip unzip jq curl xorg-x11-server-Xvfb screen python3 python3-pip ffmpeg atk at-spi2-atk cups-libs libxkbcommon libXcomposite libXdamage libXrandr mesa-libgbm gtk3 newt
+        yum install -y git fontconfig wget vim zip unzip jq curl screen python3 python3-pip ffmpeg \
+            atk at-spi2-atk cups-libs libxkbcommon libXcomposite libXdamage libXrandr mesa-libgbm gtk3 newt
         echo -e "${Info} 默认使用 Sqlite，跳过自动安装 PostgreSQL（可在 postgresql 菜单中手动安装）"
-    elif [[ ${release} == "debian" ]]; then
+    elif [[ ${release} == "debian" || ${release} == "ubuntu" ]]; then
         apt-get update
-        apt-get install -y wget ttf-wqy-zenhei jq xfonts-intl-chinese python3 python3-pip python3-venv python3-dev
-        apt-get install -y \
-            vim git zip unzip curl xvfb screen ffmpeg \
-            libgl1 libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 \
-            libcups2 libxkbcommon0 libxcomposite1 libxrandr2 libgbm1 libgtk-3-0 \
-            whiptail
-        apt-get install -y libasound2t64 || apt-get install -y libasound2 || true
-        apt --fix-broken install -y || true
-        echo -e "${Info} 默认使用 Sqlite，跳过自动安装 PostgreSQL（可在 postgresql 菜单中手动安装）"
-    elif [[ ${release} == "ubuntu" ]]; then
-        apt-get update
-        apt-get install -y software-properties-common ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming python3 python3-pip python3-venv python3-dev
-        fc-cache -f -v || true
-        if ! which python3.12 >/dev/null 2>&1 && ! which python3.11 >/dev/null 2>&1 && ! which python3.10 >/dev/null 2>&1; then
+        # Ubuntu 20.04 自带 Python 3.8，需要 deadsnakes 补 3.10+
+        if [[ ${release} == "ubuntu" ]] && ! which python3.12 >/dev/null 2>&1 && ! which python3.11 >/dev/null 2>&1 && ! which python3.10 >/dev/null 2>&1; then
+            apt-get install -y software-properties-common || true
             add-apt-repository -y ppa:deadsnakes/ppa || true
             apt-get update
             apt-get install -y python3.10-full || apt-get install -y python3.11-full || true
         fi
+        apt-get install -y python3 python3-pip python3-venv python3-dev whiptail
+        apt-get install -y wget jq curl vim git zip unzip screen ffmpeg
+        # Playwright chromium 运行时库（playwright install-deps 失败时的兜底）
         apt-get install -y \
-            vim git zip unzip jq curl xvfb screen ffmpeg \
             libgl1 libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 \
-            libcups2 libxkbcommon0 libxcomposite1 libxrandr2 libgbm1 libgtk-3-0 \
-            whiptail
-        apt-get install -y libasound2t64 || apt-get install -y libasound2 || true
+            libcups2 libxkbcommon0 libxcomposite1 libxrandr2 libgbm1 libgtk-3-0
+        # 字体：Debian 与 Ubuntu 可用包不同，逐个尝试
+        for f in ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming xfonts-intl-chinese; do
+            apt-get install -y "$f" || true
+        done
+        # libasound2 在 Debian 12 为 libasound2，Ubuntu 24.04+ 改为 libasound2t64
+        if apt-cache show libasound2t64 >/dev/null 2>&1; then
+            apt-get install -y libasound2t64 || true
+        else
+            apt-get install -y libasound2 || true
+        fi
         apt --fix-broken install -y || true
         echo -e "${Info} 默认使用 Sqlite，跳过自动安装 PostgreSQL（可在 postgresql 菜单中手动安装）"
     elif [[ ${release} == "archlinux" ]]; then
-        pacman -Sy python python-pip unzip git curl wget jq zip ffmpeg libnewt --noconfirm
+        pacman -Sy python python-pip unzip git curl wget jq zip screen ffmpeg libnewt --noconfirm
     fi
 
     if which python3.12 >/dev/null 2>&1; then
@@ -931,8 +1049,7 @@ View_napcat_webui_info() {
     echo -e "${Info} WebUI 本机：http://127.0.0.1:${port}"
     echo -e "${Info} WebUI 内网：http://${local_ipv4}:${port}"
     echo -e "${Info} 反向 WS：ws://127.0.0.1:${Port:-${DEFAULT_PORT}}/onebot/v11/ws"
-    echo "请按任意键返回..."
-    read -n 1 -s
+    press_enter_to_return
     menu_napcat
 }
 
@@ -1090,8 +1207,9 @@ Install_zhenxun_bot() {
     Start_zhenxun_bot
     Start_napcat
     echo -e "${Info} 请打开 http://127.0.0.1:${LLBOT_WEBUI_PORT} 或查看 LLBot 日志扫码登录"
-    View_napcat_log
-    
+    echo -e "${Info} LLBot 日志：${LLBOT_HOME}/logs/llbot.log（可在 LLBot 菜单第 7 项查看）"
+    echo -e "${Info} 真寻日志：${WORK_DIR}/zhenxun_bot/zhenxun_bot.log"
+    echo -e "${Info} 安装流程已结束，返回主菜单。"
 }
 
 Install_postgresql() {
@@ -1227,12 +1345,12 @@ menu_napcat() {
  ${Green_font_prefix} 7.${Font_color_suffix} 查看 LLBot 日志
  ${Green_font_prefix} 8.${Font_color_suffix} 查看 webui 信息
   ————————————
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 系统工具 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 postgresql 菜单
  ${Green_font_prefix}11.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
     echo -e " 当前状态: ${status_line}"
     echo
-    read -erp " 请输入数字 [0-10]:" num
+    read -erp " 请输入数字 [0-11]:" num
   fi
   case "$num" in
   0)
@@ -1272,7 +1390,7 @@ menu_napcat() {
     menu_zhenxun
     ;;
   *)
-    echo "请输入正确数字 [0-10]" && menu_napcat
+    echo "请输入正确数字 [0-11]" && menu_napcat
     ;;
   esac
 }
@@ -1310,12 +1428,12 @@ menu_postgresql() {
   ————————————
  ${Green_font_prefix} 8.${Font_color_suffix} 导出/导入数据库备份(待实现)
   ————————————
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 系统工具 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 LLBot 菜单
  ${Green_font_prefix}11.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
     echo -e " 当前状态: ${status_line}"
     echo
-    read -erp " 请输入数字 [0-10]:" num
+    read -erp " 请输入数字 [0-11]:" num
   fi
   case "$num" in
   0)
@@ -1355,7 +1473,7 @@ menu_postgresql() {
     menu_zhenxun
     ;;
   *)
-    echo "请输入正确数字 [0-10]" && menu_postgresql
+    echo "请输入正确数字 [0-11]" && menu_postgresql
     ;;
   esac
 }
@@ -1388,7 +1506,7 @@ menu_termux() {
  ${Green_font_prefix} 7.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
     echo -e " 当前状态: ${status_line}"
     echo
-    read -erp " 请输入数字 [0-10]:" num
+    read -erp " 请输入数字 [0-7]:" num
   fi
   case "$num" in
   0)
@@ -1416,7 +1534,7 @@ menu_termux() {
     menu_zhenxun
     ;;  
   *)
-    echo "请输入正确数字 [0-10]" && menu_termux
+    echo "请输入正确数字 [0-7]" && menu_termux
     ;;
   esac
 }
@@ -1454,12 +1572,12 @@ menu_zhenxun() {
  ${Green_font_prefix} 7.${Font_color_suffix} 查看 zhenxun_bot 日志
 ————————————
  ${Green_font_prefix} 8.${Font_color_suffix} 卸载 zhenxun_bot + LLBot
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 系统工具 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 LLBot 菜单
  ${Green_font_prefix}11.${Font_color_suffix} 切换为 postgresql 菜单" && echo
     echo -e " 当前状态: ${status_line}"
     echo
-    read -erp " 请输入数字 [0-10]:" num
+    read -erp " 请输入数字 [0-11]:" num
   fi
   case "$num" in
   0)
@@ -1499,7 +1617,7 @@ menu_zhenxun() {
     menu_postgresql
     ;;
   *)
-    echo "请输入正确数字 [0-10]" && menu_zhenxun
+    echo "请输入正确数字 [0-11]" && menu_zhenxun
     ;;
   esac
 }

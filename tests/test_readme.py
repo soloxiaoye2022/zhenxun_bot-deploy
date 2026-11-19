@@ -29,3 +29,16 @@ class TestReadme:
         text = (repo_root / "README.md").read_text(encoding="utf-8")
         assert "NapCat" in text or "Napcat" in text
         assert "go-cqhttp" in text
+
+    def test_mirror_section(self, repo_root):
+        text = (repo_root / "README.md").read_text(encoding="utf-8")
+        assert "GitHub 镜像" in text
+        assert "/root/.zhenxun_deploy/proxy.conf" in text
+        assert "gh-proxy.org" in text
+
+    def test_dead_mirrors_not_in_commands(self, repo_root):
+        text = (repo_root / "README.md").read_text(encoding="utf-8")
+        command_lines = [l for l in text.splitlines() if "curl -s -L" in l]
+        for line in command_lines:
+            assert "github.moeyy.xyz" not in line
+            assert "mirror.ghproxy.com" not in line
