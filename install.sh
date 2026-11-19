@@ -931,8 +931,7 @@ View_napcat_webui_info() {
     echo -e "${Info} WebUI 本机：http://127.0.0.1:${port}"
     echo -e "${Info} WebUI 内网：http://${local_ipv4}:${port}"
     echo -e "${Info} 反向 WS：ws://127.0.0.1:${Port:-${DEFAULT_PORT}}/onebot/v11/ws"
-    echo "请按任意键返回..."
-    read -n 1 -s
+    press_enter_to_return
     menu_napcat
 }
 
@@ -1090,8 +1089,9 @@ Install_zhenxun_bot() {
     Start_zhenxun_bot
     Start_napcat
     echo -e "${Info} 请打开 http://127.0.0.1:${LLBOT_WEBUI_PORT} 或查看 LLBot 日志扫码登录"
-    View_napcat_log
-    
+    echo -e "${Info} LLBot 日志：${LLBOT_HOME}/logs/llbot.log（可在 LLBot 菜单第 7 项查看）"
+    echo -e "${Info} 真寻日志：${WORK_DIR}/zhenxun_bot/zhenxun_bot.log"
+    echo -e "${Info} 安装流程已结束，返回主菜单。"
 }
 
 Install_postgresql() {
@@ -1227,12 +1227,12 @@ menu_napcat() {
  ${Green_font_prefix} 7.${Font_color_suffix} 查看 LLBot 日志
  ${Green_font_prefix} 8.${Font_color_suffix} 查看 webui 信息
   ————————————
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 系统工具 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 postgresql 菜单
  ${Green_font_prefix}11.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
     echo -e " 当前状态: ${status_line}"
     echo
-    read -erp " 请输入数字 [0-10]:" num
+    read -erp " 请输入数字 [0-11]:" num
   fi
   case "$num" in
   0)
@@ -1272,7 +1272,7 @@ menu_napcat() {
     menu_zhenxun
     ;;
   *)
-    echo "请输入正确数字 [0-10]" && menu_napcat
+    echo "请输入正确数字 [0-11]" && menu_napcat
     ;;
   esac
 }
@@ -1310,12 +1310,12 @@ menu_postgresql() {
   ————————————
  ${Green_font_prefix} 8.${Font_color_suffix} 导出/导入数据库备份(待实现)
   ————————————
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 系统工具 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 LLBot 菜单
  ${Green_font_prefix}11.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
     echo -e " 当前状态: ${status_line}"
     echo
-    read -erp " 请输入数字 [0-10]:" num
+    read -erp " 请输入数字 [0-11]:" num
   fi
   case "$num" in
   0)
@@ -1355,7 +1355,7 @@ menu_postgresql() {
     menu_zhenxun
     ;;
   *)
-    echo "请输入正确数字 [0-10]" && menu_postgresql
+    echo "请输入正确数字 [0-11]" && menu_postgresql
     ;;
   esac
 }
@@ -1388,7 +1388,7 @@ menu_termux() {
  ${Green_font_prefix} 7.${Font_color_suffix} 切换为 zhenxun_bot 菜单" && echo
     echo -e " 当前状态: ${status_line}"
     echo
-    read -erp " 请输入数字 [0-10]:" num
+    read -erp " 请输入数字 [0-7]:" num
   fi
   case "$num" in
   0)
@@ -1416,7 +1416,7 @@ menu_termux() {
     menu_zhenxun
     ;;  
   *)
-    echo "请输入正确数字 [0-10]" && menu_termux
+    echo "请输入正确数字 [0-7]" && menu_termux
     ;;
   esac
 }
@@ -1454,12 +1454,12 @@ menu_zhenxun() {
  ${Green_font_prefix} 7.${Font_color_suffix} 查看 zhenxun_bot 日志
 ————————————
  ${Green_font_prefix} 8.${Font_color_suffix} 卸载 zhenxun_bot + LLBot
- ${Green_font_prefix} 9.${Font_color_suffix} 切换为 termux 菜单
+ ${Green_font_prefix} 9.${Font_color_suffix} 切换为 系统工具 菜单
  ${Green_font_prefix}10.${Font_color_suffix} 切换为 LLBot 菜单
  ${Green_font_prefix}11.${Font_color_suffix} 切换为 postgresql 菜单" && echo
     echo -e " 当前状态: ${status_line}"
     echo
-    read -erp " 请输入数字 [0-10]:" num
+    read -erp " 请输入数字 [0-11]:" num
   fi
   case "$num" in
   0)
@@ -1499,7 +1499,7 @@ menu_zhenxun() {
     menu_postgresql
     ;;
   *)
-    echo "请输入正确数字 [0-10]" && menu_zhenxun
+    echo "请输入正确数字 [0-11]" && menu_zhenxun
     ;;
   esac
 }

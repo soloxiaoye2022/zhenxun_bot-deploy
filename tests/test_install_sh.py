@@ -201,6 +201,25 @@ class TestMenus:
         cases = parse_menu_cases(install_sh, "menu_termux")
         assert cases == [str(i) for i in range(8)]
 
+    def test_menu_hint_ranges_match_cases(self, install_sh):
+        for menu, top in (
+            ("menu_napcat", 11),
+            ("menu_postgresql", 11),
+            ("menu_termux", 7),
+            ("menu_zhenxun", 11),
+        ):
+            block = re.search(rf"^{menu}\(\) \{{.*?\n\}}", install_sh, re.S | re.M).group(0)
+            cases = parse_menu_cases(install_sh, menu)
+            assert cases == [str(i) for i in range(top + 1)], menu
+            assert f"[0-{top}]" in block, menu
+            assert "[0-10]" not in block or top == 10, menu
+
+    def test_menu_labels_consistent(self, install_sh):
+        assert "切换为 termux 菜单" not in install_sh
+        for menu in ("menu_napcat", "menu_postgresql", "menu_termux", "menu_zhenxun"):
+            block = re.search(rf"^{menu}\(\) \{{.*?\n\}}", install_sh, re.S | re.M).group(0)
+            assert "系统工具" in block or "termux" in block, menu
+
     def test_default_entry_is_menu_zhenxun(self, install_sh):
         assert "menu_zhenxun" in install_sh
         assert "main() {" in install_sh
@@ -260,3 +279,20 @@ class TestRetryLoops:
     def test_download_retries_five_times(self, install_sh):
         matches = re.findall(r"for \(\( i=1; i<=5; i\+\+ \)\); do", install_sh)
         assert len(matches) >= 2
+
+
+class TestInstallTailIsNonBlocking:
+    def test_install_zhenxun_does_not_tail_logs(self, install_sh):
+        block = re.search(r"^Install_zhenxun_bot\(\) \{.*?\n\}", install_sh, re.S | re.M).group(0)
+        assert "View_napcat_log" not in block
+        assert "tail -f" not in block
+        assert "返回主菜单" in block
+
+    def test_log_paths_printed(self, install_sh):
+        assert "${LLBOT_HOME}/logs/llbot.log" in install_sh
+        assert "${WORK_DIR}/zhenxun_bot/zhenxun_bot.log" in install_sh
+
+    def test_webui_info_uses_enter_prompt(self, install_sh):
+        block = re.search(r"^View_napcat_webui_info\(\) \{.*?\n\}", install_sh, re.S | re.M).group(0)
+        assert "press_enter_to_return" in block
+        assert "read -n 1 -s" not in block
