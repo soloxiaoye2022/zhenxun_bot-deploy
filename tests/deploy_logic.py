@@ -27,8 +27,7 @@ LLBOT_CLI_X64 = "LuckyLillia-CLI-linux-x64.zip"
 LLBOT_CLI_ARM64 = "LuckyLillia-CLI-linux-arm64.zip"
 NAPCAT_INSTALLER_URL = "https://github.com/LuckyLilliaDev/LuckyLilliaBot/releases/latest/download/"
 
-PIP_MIRRORS = {
-    "1": "https://pypi.tuna.tsinghua.edu.cn/simple/",
+PIP_MIRRORS = {    "1": "https://pypi.tuna.tsinghua.edu.cn/simple/",
     "2": "https://mirrors.cloud.tencent.com/pypi/simple/",
     "3": "http://mirrors.aliyun.com/pypi/simple/",
     "4": "https://pypi.mirrors.ustc.edu.cn/simple/",
